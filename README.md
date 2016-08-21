@@ -4,5 +4,4 @@ This is the official repository for the Autonomous Underwater Vehicle (AUV) Proj
 ### System Requirements
 - The software stack has been tested on Ubuntu 14.04 LTS.
 - A full installation of [ROS Indigo](http://wiki.ros.org/indigo)
-- 
 

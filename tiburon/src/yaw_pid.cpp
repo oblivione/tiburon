@@ -1,10 +1,10 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/UInt16.h>
-#include <vn_100/ins_data.h>
+#include <tiburon/ins_data.h>
 #include <dynamic_reconfigure/server.h>
-#include <vn_100/pidConfig.h>
-#include <vn_100/ins_data.h>
+#include <tiburon/pidConfig.h>
+#include <tiburon/ins_data.h>
 #include <std_msgs/Header.h>
 #include <iostream>
 #include <string>
@@ -31,7 +31,7 @@ int x;
 	 ros::Time str1;
 	 ros::Time str2;
 		 	 	
-void callback_values(vn_100::pidConfig &config,uint32_t level)
+void callback_values(tiburon::pidConfig &config,uint32_t level)
 {
 	if(config.bool_param == true)
 	{
@@ -48,7 +48,7 @@ void callback_values(vn_100::pidConfig &config,uint32_t level)
 }
 
 
-void callback(const vn_100::ins_data::ConstPtr& yaw_value)
+void callback(const tiburon::ins_data::ConstPtr& yaw_value)
 {
 	
 	ckpoint = yaw_value->YPR.x;
@@ -63,16 +63,16 @@ int main(int argc , char **argv)
 	ros::Publisher rightpub=n.advertise<std_msgs::UInt16>("sideripghtspeed",1);
 	ros::Publisher frontpub=n.advertise<std_msgs::UInt16>("frontpitchspeed",1);
 	ros::Publisher backpub=n.advertise<std_msgs::UInt16>("backpitchspeed",1);
-	ros::Subscriber depth_data = n.subscribe<vn_100::ins_data>("/vn_100/ins_data", 1 ,callback);
-	dynamic_reconfigure::Server<vn_100::pidConfig> server;
-	dynamic_reconfigure::Server<vn_100::pidConfig>::CallbackType f;
+	ros::Subscriber depth_data = n.subscribe<tiburon::ins_data>("/tiburon/ins_data", 1 ,callback);
+	dynamic_reconfigure::Server<tiburon::pidConfig> server;
+	dynamic_reconfigure::Server<tiburon::pidConfig>::CallbackType f;
 	
 	f = boost::bind(&callback_values, _1,_2);
 	server.setCallback(f);
 	
 	
 	  
-	  //	ros::ServiceClient client = n.serviceClient<vn_100::depth_srv>("depth_srv");
+	  //	ros::ServiceClient client = n.serviceClient<tiburon::depth_srv>("depth_srv");
 	ros::Rate loop_rate(1);
 	while(ros::ok())
 	{

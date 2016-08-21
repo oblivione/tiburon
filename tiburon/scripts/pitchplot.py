@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 from drawnow import *
 import rospy
-from vn_100.msg import ins_data
+from tiburon.msg import ins_data
 pitch=[]
 time=[]
 plt.ion()
@@ -11,7 +11,7 @@ def makefig():
 	plt.plot(time,pitch)
 class plotty():
 	def __init__(self,parent=None):
-		self.pitchsub=rospy.Subscriber("/vn_100/ins_data",ins_data,self.callback)
+		self.pitchsub=rospy.Subscriber("/tiburon/ins_data",ins_data,self.callback)
 		self.pitch=0.00
 	def callback(self,msg):
 		self.pitch=msg.YPR.y

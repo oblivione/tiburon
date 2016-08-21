@@ -2,7 +2,7 @@
 import matplotlib.pyplot as plt
 from drawnow import *
 import rospy
-#from vn_100.msg import ins_data
+#from tiburon.msg import ins_data
 from sensor_msgs.msg import Imu
 yaw=[]
 time=[]

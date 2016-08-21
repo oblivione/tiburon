@@ -1,9 +1,35 @@
 #include <ros/ros.h>
 //#include <geometry_msgs/Twist.h>
 #include <std_msgs/UInt16.h>
-#include <sensor_msgs/Joy.h>
+#include <sensor_msgs/Joy.h> //Run this: rosrun joy joy_node 
 #include <iostream>
 using namespace std;
+
+/*
+joystick_data is a user defined msg file. Its type can be seen by-
+rosmsg show joystick_data --> tiburon/joystick_data
+*/
+
+#include <tiburon/joystick_data.h>
+
+/*
+TO TEST:
+sudo apt-get install ros-indigo-joy
+cd /dev/input to find the name of attached joystick node --> js0 or js1
+sudo jstest /dev/input/js1 (or js0 if that is the device)-->array of axes,buttons
+
+FOR PROPER WORKING OF DEVICE:
+sudo chmod a+rw /dev/input/jsX (js0 or js1 etc)
+
+TO START THE JOY NODE:
+rosparam set joy_node/dev "/dev/input/jsX"  --> (jsX=js0 or js1 etc)
+rosrun joy joy_node
+rostopic echo joy //for values of axes,buttons array
+
+http://wiki.ros.org/joy/Tutorials/ConfiguringALinuxJoystick for details
+http://wiki.ros.org/joy/Tutorials/WritingTeleopNode for beginners
+*/
+
 
 class Thruster
 {
@@ -23,16 +49,18 @@ class Thruster
 		ros::Publisher backpitchspeedPub;
 		ros::Publisher sideleftspeedPub;
 		ros::Publisher siderightspeedPub;
+		//ros::Publisher runmodePub;
+		ros::Publisher joystickPub;
 		ros::Subscriber joy_sub_;
 };
 
 Thruster::Thruster():
 	//linear_(1),
 	//angular_(2),
-	thruster_off(1),
-	thruster_on(2),
-	thruster_init(3),
-	runmode(0),
+	thruster_off(1),		//B button
+	thruster_on(2),			//X button
+	thruster_init(3),		//Y button
+	runmode(0), 			//A button (numbering acc to jstest)
 	f(0)
 {
 	//nh_.param("axis_linear",linear_,linear_);
@@ -46,7 +74,10 @@ Thruster::Thruster():
 	backpitchspeedPub = nh_.advertise<std_msgs::UInt16>("backpitchspeed",1 );
 	sideleftspeedPub = nh_.advertise<std_msgs::UInt16>("sideleftspeed",1 );
 	siderightspeedPub = nh_.advertise<std_msgs::UInt16>("siderightspeed",1);
+	joystickPub = nh_.advertise<tiburon::joystick_data>("joydata",1);
+	//runmodePub = nh_.advertise<std_msgs::UInt16>("runmode",1);
 	
+
 	joy_sub_ = nh_.subscribe<sensor_msgs::Joy>("joy",10,&Thruster::joyCallback,this);
 }
 
@@ -59,7 +90,10 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 	cout<<"button value(off)="<<joy->buttons[thruster_off]<<endl;
 	cout<<"button value(on)="<<joy->buttons[thruster_on]<<endl;
 	cout<<"button value(init)="<<joy->buttons[thruster_init]<<endl;
+	cout<<"button value(runmode)="<<joy->buttons[runmode]<<endl;
 
+	//std_msgs::UInt16 runmode_data;
+	tiburon::joystick_data joy_msg;
 	if(joy->buttons[runmode] == 1)
 	{
 		f++;
@@ -67,6 +101,9 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		{
 		 	f = 0;
 		}
+		//runmode_data.data = f;
+		joy_msg.runmode = f;
+		joystickPub.publish(joy_msg);
 	}
 		cout<<"f="<<f<<endl;
 		if(joy->buttons[thruster_off] == 1)
@@ -82,36 +119,51 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 			msg.data = 1;
 		}
 		thruster_but_pub.publish(msg);
+		joy_msg.thrusterButton = msg.data;
+		joystickPub.publish(joy_msg);
 
 		std_msgs::UInt16 msgf; //front
 		std_msgs::UInt16 msgb; //back
 		std_msgs::UInt16 msgl; //left
 		std_msgs::UInt16 msgr; //right
 		
-		/*Default values:*/
+		/*DEFAULT VALUES:*/
 		msgf.data = 1000;  //axes[1] = 1
 		msgb.data = 1000;  // axes[1] = -1
 		msgl.data = 1500; //axes[2] = 1
 		msgr.data = 1500; //axes[2] = -1
+		
+		joy_msg.frontpitchspeed = msgf.data;
+		joy_msg.backpitchspeed = msgb.data;
+		joy_msg.sideleftspeed = msgl.data;
+		joy_msg.siderightspeed = msgr.data;
 
+		joystickPub.publish(joy_msg);
+		joystickPub.publish(joy_msg);
+		joystickPub.publish(joy_msg);
+		joystickPub.publish(joy_msg);
+
+		//FOR TESTING PURPOSES:
 		cout<<"axes[1]="<<joy->axes[1]<<endl;
 		cout<<"axes[2]="<<joy->axes[2]<<endl;
 		cout<<"axes[3]="<<joy->axes[3]<<endl;
 		cout<<"axes[4]="<<joy->axes[4]<<endl;
 
 
+	//FOLLOWING IS SUBJECT TO CHANGE DEPENDING ON THE JOYSTICK CONFIGURATION --> the desired index and given range of the axes
 	switch(f)
 	{
+		//RUNMODE: ON --> (FRONT,BACK) AND (LEFT,RIGHT) CHANGE SIMULTANEOUSLY
 		case 1:
 
-		if( joy->axes[1] <= 1 && joy->axes[1] >=0)
+		if( joy->axes[4] <= 1 && joy->axes[4] >=0)
 		{
-			msgf.data +=  (int) (joy->axes[1] * 1000);  //map it
+			msgf.data +=  (int) (joy->axes[4] * 1000);  //map it
 			msgb.data = msgf.data;
 		}
-		else if( joy->axes[1] >= -1 && joy->axes[1] <=0 )
+		else if( joy->axes[4] >= -1 && joy->axes[4] <=0 )
 		{
-			msgb.data -=  (int) (joy->axes[1] * 1000); //map it
+			msgb.data -=  (int) (joy->axes[4] * 1000); //map it
 			msgf.data = msgb.data;
 		}
 		if( joy->axes[2] <=1 && joy->axes[2] >=0)
@@ -128,27 +180,37 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		}
 	
 		cout<<"msgf="<<msgf.data<<endl;
-        	cout<<"msgb="<<msgb.data<<endl;
-        	cout<<"msgl="<<msgl.data<<endl;
-        	cout<<"msgr="<<msgr.data<<endl;
+        cout<<"msgb="<<msgb.data<<endl;
+        cout<<"msgl="<<msgl.data<<endl;
+        cout<<"msgr="<<msgr.data<<endl;
 
 		frontpitchspeedPub.publish(msgf);
-        	backpitchspeedPub.publish(msgb);
-        	sideleftspeedPub.publish(msgl);
-        	siderightspeedPub.publish(msgr);
+        backpitchspeedPub.publish(msgb);
+        sideleftspeedPub.publish(msgl);
+        siderightspeedPub.publish(msgr);
+		
+		joy_msg.frontpitchspeed = msgf.data;
+		joy_msg.backpitchspeed = msgb.data;
+		joy_msg.sideleftspeed = msgl.data;
+		joy_msg.siderightspeed = msgr.data;
+
+		joystickPub.publish(joy_msg);
+		joystickPub.publish(joy_msg);
+		joystickPub.publish(joy_msg);
+		joystickPub.publish(joy_msg);
 
 		break;
 		
 		case 0:
 		
-		if( joy->axes[1] <= 1 && joy->axes[1] >=0)
+		if( joy->axes[4] <= 1 && joy->axes[4] >=0)
 		{
-			msgf.data +=  (int) (joy->axes[1] * 1000);  //map it
+			msgf.data +=  (int) (joy->axes[4] * 1000);  //map it
 			//msgb.data = msgf.data;
 		}
-		else if( joy->axes[1] >= -1 && joy->axes[1] <=0 )
+		else if( joy->axes[4] >= -1 && joy->axes[4] <=0 )
 		{
-			msgb.data -=  (int) (joy->axes[1] * 1000); //map it
+			msgb.data -=  (int) (joy->axes[4] * 1000); //map it
 			//msgf.data = msgb.data;
 		}
 		if( joy->axes[2] <=1 && joy->axes[2] >=0)
@@ -165,14 +227,14 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		}
 	
 		cout<<"msgf="<<msgf.data<<endl;
-        	cout<<"msgb="<<msgb.data<<endl;
-        	cout<<"msgl="<<msgl.data<<endl;
-        	cout<<"msgr="<<msgr.data<<endl;
+        cout<<"msgb="<<msgb.data<<endl;
+        cout<<"msgl="<<msgl.data<<endl;
+        cout<<"msgr="<<msgr.data<<endl;
 
 		frontpitchspeedPub.publish(msgf);
-        	backpitchspeedPub.publish(msgb);
-        	sideleftspeedPub.publish(msgl);
-        	siderightspeedPub.publish(msgr);
+        backpitchspeedPub.publish(msgb);
+        sideleftspeedPub.publish(msgl);
+        siderightspeedPub.publish(msgr);
 
 		break;
 
@@ -186,6 +248,7 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 int main(int argc, char** argv)
 {
 	ros::init(argc,argv,"thruster_control_joy");
+	cout<<"Joystick node initialized\n";
 	Thruster thruster;
 
 	ros::spin();

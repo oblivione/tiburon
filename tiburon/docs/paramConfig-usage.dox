@@ -1,6 +1,6 @@
 \subsubsection usage Usage
 \verbatim
-<node name="vn_100" pkg="vn_100" type="vn_100">
+<node name="tiburon" pkg="tiburon" type="tiburon">
   <param name="kp" type="double" value="70.0" />
   <param name="ki" type="double" value="0.5" />
   <param name="kd" type="double" value="50.0" />

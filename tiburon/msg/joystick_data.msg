@@ -1,0 +1,6 @@
+uint32 thrusterButton
+uint32 frontpitchspeed
+uint32 backpitchspeed
+uint32 sideleftspeed
+uint32 siderightspeed
+uint32 runmode

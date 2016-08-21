@@ -3,7 +3,7 @@
 #include<cmath>
 #include<ros/ros.h>
 #include "std_msgs/Float64.h"
-#include <vn_100/ins_data.h>
+#include <tiburon/ins_data.h>
 
 //variables for kalman filter
     double Q_angle; // Process noise variance for the accelerometer
@@ -90,7 +90,7 @@
     double getQbias() { return Q_bias; };
     double getRmeasure() { return R_measure; };
 */
-void callback(const vn_100::ins_data::ConstPtr& ypr_values)
+void callback(const tiburon::ins_data::ConstPtr& ypr_values)
 {
      gyroX=ypr_values->YPR.x;
 	 gyroY=ypr_values->YPR.y;
@@ -103,7 +103,7 @@ int main(int argc,char **argv)
    ros::Publisher conf_code=yf.advertise<std_msgs::Float64>("/code", 1);
 
 	ros::Publisher pub=n.advertise<std_msgs::Float64>("Yaw value",1);
-    ros::Subscriber value = yf.subscribe<vn_100::ins_data>("/vn_100/sensor_data", 1 , callback);
+    ros::Subscriber value = yf.subscribe<tiburon::ins_data>("/tiburon/sensor_data", 1 , callback);
 	std_msgs::Float64 msg1;
 	double timer=clock();//
 	 

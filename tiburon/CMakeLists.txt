@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(vn_100)
+project(tiburon)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -14,9 +14,11 @@ dynamic_reconfigure
 message_generation
 genmsg
 actionlib_msgs
-
+cv_bridge
+#opencv2
+sensor_msgs
 )
-find_package(OpenCV)
+#find_package(OpenCV)
 
 
 ## System dependencies are found with CMake's conventions
@@ -59,6 +61,7 @@ find_package(OpenCV)
    send_arduino.msg
    ins_data.msg
    auvcontrol.msg
+   joystick_data.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -98,7 +101,7 @@ generate_dynamic_reconfigure_options(
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-  LIBRARIES vn_100
+  LIBRARIES tiburon
   CATKIN_DEPENDS roscpp rospy sensor_msgs geometry_msgs tf dynamic_reconfigure  actionlib_msgs
   DEPENDS system_lib
   CATKIN_DEPENDS message_runtime
@@ -110,7 +113,9 @@ include_directories(${Opencv_INCLUDE_DIRS})
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
- include_directories(vnccpplib/include)
+include_directories(${catkin_INCLUDE_DIRS})
+
+include_directories(vnccpplib/include)
 add_library(vn100
     vnccpplib/src/vn100.c
 )
@@ -119,8 +124,8 @@ add_library(vncp_services
 )
 
 ## Declare a cpp library
-# add_library(vn_100
-#   src/${PROJECT_NAME}/vn_100.cpp
+# add_library(tiburon
+#   src/${PROJECT_NAME}/tiburon.cpp
 # )
 add_executable(vn100_node  src/vn100_node.cpp
                            vnccpplib/src/arch/linux/vncp_services.c
@@ -135,26 +140,26 @@ ${catkin_LIBRARIES}
 vncp_services
 vn100
 )
-add_executable(line_follow src/line_follower.cpp)
-target_link_libraries(line_follow ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+#add_executable(line_follow src/line_follower.cpp)
+#target_link_libraries(line_follow ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
 add_executable(depth_pid src/depth_pid.cpp)
 target_link_libraries(depth_pid ${catkin_LIBRARIES})
-add_dependencies(depth_pid vn_100_generate_messages_cpp)
-add_dependencies(depth_pid ${vn_100}_gencfg)
+add_dependencies(depth_pid tiburon_generate_messages_cpp)
+add_dependencies(depth_pid ${tiburon}_gencfg)
 
 
 add_executable(yaw_pid src/yaw_pid.cpp)
 target_link_libraries(yaw_pid ${catkin_LIBRARIES})
-add_dependencies(yaw_pid vn_100_generate_messages_cpp)
-add_dependencies(yaw_pid ${vn_100}_gencfg)
+add_dependencies(yaw_pid tiburon_generate_messages_cpp)
+add_dependencies(yaw_pid ${tiburon}_gencfg)
 
 #add_executable( send_to_arduino src/send_to_arduino.cpp
 #)
 #target_link_libraries(send_to_arduino
   # ${catkin_LIBRARIES}
  #)
-#add_dependencies(send_to_arduino vn_100_generate_messages_cpp)
+#add_dependencies(send_to_arduino tiburon_generate_messages_cpp)
 add_executable(rviz src/pub_rviz.cpp)
 target_link_libraries(rviz ${catkin_LIBRARIES})
 
@@ -170,14 +175,14 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
  )
 #add_dependencies(talker shaswat_control_generate_messages_cpp)
 ## Declare a cpp executable
-# add_executable(vn_100_node src/vn_100_node.cpp)
+# add_executable(tiburon_node src/tiburon_node.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(vn_100_node vn_100_generate_messages_cpp)
+# add_dependencies(tiburon_node tiburon_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(vn_100_node
+# target_link_libraries(tiburon_node
 #   ${catkin_LIBRARIES}
 # )
 
@@ -196,7 +201,7 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS vn_100 vn_100_node
+# install(TARGETS tiburon tiburon_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -221,7 +226,7 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_vn_100.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_tiburon.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
@@ -237,5 +242,5 @@ target_link_libraries(
 
 add_dependencies(
   fibonacci_server
-  ${vn_100_EXPORTED_TARGETS}
+  ${tiburon_EXPORTED_TARGETS}
 )

@@ -1,5 +1,5 @@
 <launch>
-  <node pkg="vn_100" type="vn100_node" name="INS" output="screen">
+  <node pkg="tiburon" type="vn100_node" name="INS" output="screen">
    <param name="serial_port" type="string" value="/dev/ttyUSB0" />
    <param name="serial_baud" type="int" value="115200" />
    <!-- setting the output type and frequency -->

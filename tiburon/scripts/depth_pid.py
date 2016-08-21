@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String,UInt16,Float32,Float64
-from vn_100.msg import ins_data
+from tiburon.msg import ins_data
 from dynamic_reconfigure.server import Server
-from vn_100.cfg import depthparamsConfig
+from tiburon.cfg import depthparamsConfig
 import datetime,time
 kp_depth,ki_depth,kd_depth,setpoint,ckpoint,presenttime,pasttime,prev_error,error,integral,derivative,depthhelpval=0.00,0.00,0.00,1000.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
 frontpitchpub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)

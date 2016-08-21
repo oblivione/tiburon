@@ -6,9 +6,9 @@
 #include "vectornav.h"
 #include<ros/ros.h>
 //adding message type headers
-#include <vn_100/sensor_data.h>
-#include<vn_100/ins_data.h>
-#include<vn_100/YPR.h>
+#include <tiburon/sensor_data.h>
+#include<tiburon/ins_data.h>
+#include<tiburon/YPR.h>
 //Publishers
 	ros::Publisher pubsens_data;
 	ros::Publisher pubins_data;
@@ -116,7 +116,7 @@ void publish_device()
 		}
 		else
 		{
-			vn_100::sensor_data msg_sensor_data;
+			tiburon::sensor_data msg_sensor_data;
 			msg_sensor_data.header.seq=seq;
 			msg_sensor_data.header.stamp=timestamp;
 			msg_sensor_data.header.frame_id=imu_frame_id;
@@ -138,7 +138,7 @@ void publish_device()
 	{
 		VnYpr YPR;
 		VnQuaternion quat_data;
-		vn_100::ins_data msg_ins_data;
+		tiburon::ins_data msg_ins_data;
 		vn_error=vn100_getYawPitchRoll(&vn100,&YPR);
 		if(vn_error!=VNERR_NO_ERROR)
 		{
@@ -205,8 +205,8 @@ void vnerror_msg(VN_ERROR_CODE vn_error,std::string &msg)
 		  msg="Undefined error";
 	}
 }
-bool send_data(vn_100::YPR::Request &req,
-               vn_100::YPR::Response &res)
+bool send_data(tiburon::YPR::Request &req,
+               tiburon::YPR::Response &res)
 {
 	if(req.ins=="sendYPR")
 	{
@@ -221,7 +221,7 @@ bool send_data(vn_100::YPR::Request &req,
 }
 int main(int argc,char** argv)
 {
-	ros::init(argc,argv,"vn_100"); ////initializing ros node
+	ros::init(argc,argv,"tiburon"); ////initializing ros node
 	ros::NodeHandle n;
 	ros::NodeHandle np("~");        //creating public and private nodehandlers to ha                               ndle ros publish services and private parameters
 	std::string port;
@@ -231,8 +231,8 @@ int main(int argc,char** argv)
 	np.param<int>("publish_rate",publish_rate,10);
 	np.param<int>("async_output_type",async_output_type,0);
 	np.param<int>("async_output_rate",async_output_rate,6);//assigning params to                                                            variables
-	pubsens_data   =np.advertise<vn_100::sensor_data> ("sensor_data",1);
-	pubins_data    =np.advertise<vn_100::ins_data> ("ins_data",1);//Initializing                                                                   Publishers
+	pubsens_data   =np.advertise<tiburon::sensor_data> ("sensor_data",1);
+	pubins_data    =np.advertise<tiburon::ins_data> ("ins_data",1);//Initializing                                                                   Publishers
 	ros::ServiceServer service=n.advertiseService("query_ins_data",send_data);
 	ROS_INFO("Ready to answer your queries regarding ins data");
 	VN_ERROR_CODE vn_err;         //dealing with vectornav errors

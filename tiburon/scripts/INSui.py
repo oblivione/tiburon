@@ -4,7 +4,7 @@ import signal
 import sys
 from PyQt4 import QtGui,QtCore
 import rospy
-from vn_100.msg import *
+from tiburon.msg import *
 class INSui(QtGui.QMainWindow):
     inscalback=QtCore.pyqtSignal(list,list)
     sensorcalback=QtCore.pyqtSignal(list,list,list,float,float)
@@ -15,8 +15,8 @@ class INSui(QtGui.QMainWindow):
         self.pubsub()
         self.signalnslots()
     def pubsub(self):
-        self.insdatasub=rospy.Subscriber("/vn_100/ins_data",ins_data,self.insdatacallback)
-        self.sensordatapub=rospy.Subscriber("/vn_100/sensor_data",sensor_data,self.sensordatacallback)
+        self.insdatasub=rospy.Subscriber("/tiburon/ins_data",ins_data,self.insdatacallback)
+        self.sensordatapub=rospy.Subscriber("/tiburon/sensor_data",sensor_data,self.sensordatacallback)
     def signalnslots(self):
         self.inscalback.connect(self.inscalbackprint)
         self.sensorcalback.connect(self.sensorcalbackprint)

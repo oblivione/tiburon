@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String,UInt16
-from vn_100.msg import ins_data
+from tiburon.msg import ins_data
 from dynamic_reconfigure.server import Server
-from vn_100.cfg import pidConfig
+from tiburon.cfg import pidConfig
 kp_yaw,ki_yaw,kd_yaw,setpoint_yaw,ckpoint,presenttime,pasttime,error,integral,derivative=0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
 max_error,min_error
 sideleftspeedpub=rospy.Publisher("/sideleftspeed",UInt16,queue_size=1)
@@ -71,7 +71,7 @@ def callback(config,level):
 		integral=0
 		#print kp_pitch,ki_pitch,kd_pitch
 	return config	
-yawdatasub=rospy.Subscriber("/vn_100/ins_data",ins_data,pidcallback)
+yawdatasub=rospy.Subscriber("/tiburon/ins_data",ins_data,pidcallback)
 if __name__ == "__main__":
 	rospy.init_node("yaw_pid",anonymous=True)
 	srv=Server(pidConfig,callback)

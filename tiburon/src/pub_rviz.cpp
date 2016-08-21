@@ -1,12 +1,12 @@
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
-#include<vn_100/ins_data.h>
+#include<tiburon/ins_data.h>
 
   
   ros::Publisher marker_pub;
 
 
-void imuCallBack(const vn_100::ins_data::ConstPtr& msg)
+void imuCallBack(const tiburon::ins_data::ConstPtr& msg)
 {
 
 
@@ -70,7 +70,7 @@ int main( int argc, char** argv )
 	marker_pub = n.advertise<visualization_msgs::Marker>("visualization_imu", 1);
 
   
-	ros::Subscriber imu_sub = n.subscribe("/vn_100/ins_data", 1, imuCallBack);
+	ros::Subscriber imu_sub = n.subscribe("/tiburon/ins_data", 1, imuCallBack);
 
 	ros::spin();
 

@@ -1,6 +1,6 @@
 \subsubsection usage Usage
 \verbatim
-<node name="depth_stop" pkg="vn_100" type="depth_stop">
+<node name="depth_stop" pkg="tiburon" type="depth_stop">
   <param name="kp" type="double" value="70.0" />
   <param name="ki" type="double" value="0.5" />
   <param name="kd" type="double" value="50.0" />

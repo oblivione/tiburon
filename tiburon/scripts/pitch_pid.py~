@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String,UInt16
-from vn_100.msg import ins_data
+from tiburon.msg import ins_data
 from dynamic_reconfigure.server import Server
-from vn_100.cfg import pitchparamsConfig
+from tiburon.cfg import pitchparamsConfig
 kp_pitch,ki_pitch,kd_pitch,setpoint,ckpoint,presenttime,pasttime,error,integral,derivative=0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00,0.00
 frontpitchpub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
 backpitchpub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
@@ -45,7 +45,7 @@ def callback(config,level):
 		setpoint=config.setpoint
 		#print kp_pitch,ki_pitch,kd_pitch
 	return config	
-pitchdatasub=rospy.Subscriber("/vn_100/ins_data",ins_data,pidcallback)
+pitchdatasub=rospy.Subscriber("/tiburon/ins_data",ins_data,pidcallback)
 if __name__ == "__main__":
 	rospy.init_node("pitch_pid",anonymous=True)
 	srv=Server(pitchparamsConfig,callback)

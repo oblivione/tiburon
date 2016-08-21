@@ -3,13 +3,13 @@
 #include "vectornav.h"
 #include<std_msgs/Float64.h>
 #include <geometry_msgs/Vector3.h>
-//#include <vn_100/send_arduino.h>
-#include <vn_100/ins_data.h>
+//#include <tiburon/send_arduino.h>
+#include <tiburon/ins_data.h>
 class SubAndPub
 {
 	public:
 		SubAndPub();
-		void callback(const vn_100::ins_data::ConstPtr& sensors);
+		void callback(const tiburon::ins_data::ConstPtr& sensors);
 
 
                 ros::NodeHandle n_;
@@ -22,12 +22,12 @@ SubAndPub::SubAndPub()
 {
 	  pub_ = n_.advertise<std_msgs::Float64>("/ypr_data",1);
 
-	 sub_ = n_.subscribe<vn_100::ins_data>("/vn_100/ins_data", 1 , &SubAndPub::callback , this);
+	 sub_ = n_.subscribe<tiburon::ins_data>("/tiburon/ins_data", 1 , &SubAndPub::callback , this);
          //                 pub_ = n_.advertise<geometry_msgs::Vector3>("/ypr_data",1);
 
 }
 
-void SubAndPub::callback(const vn_100::ins_data::ConstPtr& sensors)
+void SubAndPub::callback(const tiburon::ins_data::ConstPtr& sensors)
 {
 	std_msgs::Float64 key;
 //	send_value::sensor_data msg_data;

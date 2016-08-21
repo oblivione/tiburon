@@ -1,9 +1,9 @@
 #include <ros/ros.h>
 #include <std_msgs/Float64.h>
 #include <std_msgs/UInt16.h>
-#include <vn_100/ins_data.h>
+#include <tiburon/ins_data.h>
 #include <dynamic_reconfigure/server.h>
-#include <vn_100/pidConfig.h>
+#include <tiburon/pidConfig.h>
 
 float kp,ki,kd,setpoint,error,previous_error,total_error,integral,derivative,dt=10;
 float kp_1,ki_1,kd_1,setpoint_1,error_1,previous_error_1,total_error_1,integral_1,derivative_1,dt_1=10;
@@ -16,7 +16,7 @@ float ITerm,last_pitchvalue;
 	 std_msgs::Float64 ui_value;
 	 std_msgs::Float64 pitch_value;
 	
-void callback_values(vn_100::pidConfig &config,uint32_t level)
+void callback_values(tiburon::pidConfig &config,uint32_t level)
 {
 	kp = config.kp ;
 		ki = config.ki ;
@@ -33,7 +33,7 @@ class Depth
 	Depth();
 	void callback(const std_msgs::Float64::ConstPtr& sensors);
 	void callback_1(const std_msgs::Float64::ConstPtr& sensors_1);
-	void callback_2(const vn_100::ins_data::ConstPtr& pitch);
+	void callback_2(const tiburon::ins_data::ConstPtr& pitch);
 	         
 	            ros::NodeHandle n_;
                 ros::Subscriber sub_;
@@ -52,7 +52,7 @@ Depth::Depth()
 	pub_3 = n_.advertise<std_msgs::UInt16>("sideleftspeed",1);
 	pub_4 = n_.advertise<std_msgs::UInt16>("siderightspeed",1);
 	sub_ = n_.subscribe<std_msgs::Float64>("depth_val", 1 , &Depth::callback , this);
-	sub_2 = n_.subscribe<vn_100::ins_data>("/ins_data",1,&Depth::callback_2, this);
+	sub_2 = n_.subscribe<tiburon::ins_data>("/ins_data",1,&Depth::callback_2, this);
 	sub_1 = n_.subscribe<std_msgs::Float64>("/ui_depth",1 , &Depth::callback_1, this);
 }
 
@@ -62,7 +62,7 @@ void Depth::callback_1(const std_msgs::Float64::ConstPtr& sensors_1)
 	value.data = 42;
 	
 }
-void Depth::callback_2(const vn_100::ins_data::ConstPtr& pitch)
+void Depth::callback_2(const tiburon::ins_data::ConstPtr& pitch)
 {   
 	pitch_value.data = pitch->YPR.y;
 		
@@ -109,8 +109,8 @@ void Depth::callback(const std_msgs::Float64::ConstPtr& sensors)
 int main(int argc , char **argv)
 {
 	ros::init(argc,argv,"depth_stop");
-	dynamic_reconfigure::Server<vn_100::pidConfig> server;
-	dynamic_reconfigure::Server<vn_100::pidConfig>::CallbackType f;
+	dynamic_reconfigure::Server<tiburon::pidConfig> server;
+	dynamic_reconfigure::Server<tiburon::pidConfig>::CallbackType f;
 	
 	f = boost::bind(&callback_values, _1,_2);
 	server.setCallback(f);

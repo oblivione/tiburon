@@ -4,9 +4,9 @@ project(tiburon)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED 
+find_package(catkin REQUIRED
 tf
-rospy 
+rospy
 roscpp
 geometry_msgs
 std_msgs
@@ -61,7 +61,6 @@ sensor_msgs
    send_arduino.msg
    ins_data.msg
    auvcontrol.msg
-   joystick_data.msg
  )
 
 ## Generate services in the 'srv' folder

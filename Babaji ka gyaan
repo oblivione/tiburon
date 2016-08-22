@@ -1,0 +1,1 @@
+1. For the ones working on UI - NEVER update the UI on a callback. Initialize a timer which does the needful. If multiple callbacks occur, since multiple threads will try to access the same UI element at the same time, segmentation fault will occur. 

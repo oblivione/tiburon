@@ -6,7 +6,7 @@ from PyQt4 import QtGui,QtCore
 from std_msgs.msg import UInt16
 import signal
 import os
-from vn_100.msg import joystick_data
+#from vn_100.msg import joystick_data
 
 class JoystickPanel(QtGui.QMainWindow):
 

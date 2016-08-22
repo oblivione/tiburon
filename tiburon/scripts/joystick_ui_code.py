@@ -22,6 +22,11 @@ class JoystickPanel(QtGui.QMainWindow):
         self.rightspeed = 1500
         self.forwardspeed = 1000
         self.backwardspeed = 1000
+        '''
+        Logically, following updates could have been done directly in the callbacks that follow.
+        But Qt gives segmentation fault when the UI elements can't keep up with the rate of changes in the callbacks.
+        Following is a better method to update according to timer for smooth operation
+        '''
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.update)
         self._timer.start(10)

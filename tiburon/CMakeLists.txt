@@ -73,7 +73,6 @@ sensor_msgs
 ## Generate actions in the 'action' folder
  add_action_files(
    FILES
-   Fibonacci.action
 #   Action2.action
  )
 
@@ -141,17 +140,6 @@ vn100
 )
 #add_executable(line_follow src/line_follower.cpp)
 #target_link_libraries(line_follow ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
-
-add_executable(depth_pid src/depth_pid.cpp)
-target_link_libraries(depth_pid ${catkin_LIBRARIES})
-add_dependencies(depth_pid tiburon_generate_messages_cpp)
-add_dependencies(depth_pid ${tiburon}_gencfg)
-
-
-add_executable(yaw_pid src/yaw_pid.cpp)
-target_link_libraries(yaw_pid ${catkin_LIBRARIES})
-add_dependencies(yaw_pid tiburon_generate_messages_cpp)
-add_dependencies(yaw_pid ${tiburon}_gencfg)
 
 #add_executable( send_to_arduino src/send_to_arduino.cpp
 #)
@@ -232,14 +220,3 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(fibonacci_server src/fibonacci_server.cpp)
-
-target_link_libraries(
-  fibonacci_server
-  ${catkin_LIBRARIES}
-)
-
-add_dependencies(
-  fibonacci_server
-  ${tiburon_EXPORTED_TARGETS}
-)

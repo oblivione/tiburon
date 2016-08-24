@@ -1,4 +1,17 @@
-1. For the ones working on UI - NEVER update the UI on a callback. 
-Initialize a timer which does the needful.
-If multiple callbacks occur, since multiple threads will try to access the same UI element at the same time, 
-segmentation fault will occur. 
+1. For the ones working on UI - NEVER update the UI on a callback.
+Initialize a timer which does the needful. If multiple callbacks occur,
+since multiple threads will try to access the same UI element at the
+same time, segmentation fault will occur. 
+
+2. To give any USB device a constant name so that even if the port
+changes on reconnecting it, do the following
+$ udevinfo -a -p $(udevinfo -q path -n /dev/ttyUSB0) 
+Here ttyUSB0 is the device which is under consideration
+$ sudo nano /etc/udev/rules.d/10-tiburonRules.rules
+The files are executed in lexicographical order. So ensure that your
+rule starts with the proper name
+$ ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",SYMLINK+="auv_vn100"
+Only attributes within one device section may be used together in one
+rule, to match the device for which the link will be created
+$ sudo service udev restart
+Restart udev and reconnect the device. The link will be created.

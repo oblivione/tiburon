@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from vn_100.cfg import depthparamsConfig
+from tiburon.cfg import depthparamsConfig
 from dynamic_reconfigure.server import Server
 
 def callback(config, level):

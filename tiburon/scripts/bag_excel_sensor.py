@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import xlwt
 import rospy
-from vn_100.msg import sensor_data 
+from tiburon.msg import sensor_data 
 
 #create new workbook
 wb = xlwt.Workbook()
@@ -38,6 +38,6 @@ if __name__ == "__main__":
     rospy.init_node("bag_excel_sensor")
     rospy.loginfo("Working")
     heading1()
-    rospy.Subscriber("/vn_100/sensor_data",sensor_data,sensor_data_callback)
+    rospy.Subscriber("/tiburon/sensor_data",sensor_data,sensor_data_callback)
     wb.save("pid_data.xls")
     rospy.spin()

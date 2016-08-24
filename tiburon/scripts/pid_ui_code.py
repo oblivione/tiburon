@@ -3,8 +3,8 @@ from pid_ui import Ui_MainWindow
 import sys
 from PyQt4 import QtGui,QtCore
 import rospy
-from vn_100.msg import ins_data
-from vn_100.cfg import pidConfig,depthparamsConfig,pitchparamsConfig
+from tiburon.msg import ins_data
+from tiburon.cfg import pidConfig,depthparamsConfig,pitchparamsConfig
 from std_msgs.msg import String,UInt16,Float64,Float32
 from dynamic_reconfigure.server import Server
 from dynamic_reconfigure.msg import Config
@@ -71,11 +71,11 @@ class pidPanel(QtGui.QMainWindow):
         self.ui.setpoint_pitch_lineEdit.setText(str(setpoint_pitch))
     
     def pubsNsubs(self):
-        self.yaw = rospy.Subscriber("/vn_100/ins_data",ins_data,self.yawCallback) 
+        self.yaw = rospy.Subscriber("/tiburon/ins_data",ins_data,self.yawCallback) 
         self.yaw_srv = rospy.Subscriber("/server_yaw/parameter_updates",Config,self.srv_y_callback)
         #self.depth = rospy.Subscriber("/depth_value",Float64,self.depthCallback)
         self.depth_srv = rospy.Subscriber("/server_depth/parameter_updates",Config,self.srv_d_callback)
-        #self.pitch = rospy.Subscriber("/vn_100/ins_data",ins_data,self.pitchCallback) 
+        #self.pitch = rospy.Subscriber("/tiburon/ins_data",ins_data,self.pitchCallback) 
         self.pitch_srv = rospy.Subscriber("/server_pitch/parameter_updates",Config,self.srv_p_callback)
 
     def graph_depth(self):                        
@@ -101,7 +101,7 @@ class pidPanel(QtGui.QMainWindow):
         self.setpoint_d.append(setpoint_depth)
     
     def graph_pitch(self):  
-        rospy.Subscriber("/vn_100/ins_data",ins_data,self.pitchCallback)
+        rospy.Subscriber("/tiburon/ins_data",ins_data,self.pitchCallback)
         #self.startTimeNow_2 = rospy.get_rostime()
         #self.startTime_2 = self.startTimeNow_2.secs + 10**-9*self.startTimeNow_2.nsecs
         self._timer = QtCore.QTimer(self)

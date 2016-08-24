@@ -115,8 +115,8 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 	/*DEFAULT VALUES:*/
 	// update this in joystick ui if changed here
-	msgf.data = 1000;  //axes[1] = 1
-	msgb.data = 1000;  // axes[1] = -1
+	msgf.data = 1500;  //axes[1] = 1
+	msgb.data = 1500;  // axes[1] = -1
 	msgl.data = 1500; //axes[2] = 1
 	msgr.data = 1500; //axes[2] = -1
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import rospy
-from vn_100.cfg import pitchparamsConfig
+from tiburon.cfg import pitchparamsConfig
 from dynamic_reconfigure.server import Server
 
 def callback(config, level):

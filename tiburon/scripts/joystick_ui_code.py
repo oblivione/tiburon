@@ -6,7 +6,7 @@ from PyQt4 import QtGui,QtCore
 from std_msgs.msg import UInt16
 import signal
 import os
-#from vn_100.msg import joystick_data
+#from tiburon.msg import joystick_data
 
 class JoystickPanel(QtGui.QMainWindow):
 
@@ -20,8 +20,8 @@ class JoystickPanel(QtGui.QMainWindow):
         self.thrusterstate = 0
         self.leftspeed = 1500
         self.rightspeed = 1500
-        self.forwardspeed = 1000
-        self.backwardspeed = 1000
+        self.forwardspeed = 1500
+        self.backwardspeed = 1500
         '''
         Logically, following updates could have been done directly in the callbacks that follow.
         But Qt gives segmentation fault when the UI elements can't keep up with the rate of changes in the callbacks.

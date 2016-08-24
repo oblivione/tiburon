@@ -20,15 +20,15 @@ class Panel(QtGui.QMainWindow):
         self.ui.pid_Button.clicked.connect(self.pid)
         self.ui.camera_Button.clicked.connect(self.camera)
     def thruster(self):
-        os.system('rosrun vn_100 thrustercontrol.py &')
+        os.system('rosrun tiburon thrustercontrol.py &')
     def joystick(self):
-	os.system('rosrun vn_100 joystick_ui_code.py &')
+	os.system('rosrun tiburon joystick_ui_code.py &')
     def pid(self):
-	    os.system('rosrun vn_100 pid_ui_code.py &')	
-	    os.system('rosrun vn_100 server_yaw.py & rosrun vn_100 server_depth.py & rosrun vn_100 server_pitch.py &')
+	    os.system('rosrun tiburon pid_ui_code.py &')	
+	    os.system('rosrun tiburon server_yaw.py & rosrun tiburon server_depth.py & rosrun tiburon server_pitch.py &')
 	    os.system('rosrun rqt_reconfigure rqt_reconfigure &') 
     def camera(self):
-        os.system('rosrun vn_100 show.py &')
+        os.system('rosrun tiburon show.py &')
         
 def main():
     rospy.init_node("unified_ui_code")

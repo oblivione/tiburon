@@ -3,7 +3,7 @@ import xlwt
 import xlrd
 import rospy 
 from xlutils.copy import copy
-from vn_100.msg import ins_data#from vn_100.msg will be for all msgs defined in package
+from tiburon.msg import ins_data#from tiburon.msg will be for all msgs defined in package
 
 #RUN BAG_EXCEL_SENSOR FIRST
 
@@ -37,6 +37,6 @@ if __name__ == "__main__":
     global count
     rospy.init_node("bag_excel_ins")
     heading2()
-    rospy.Subscriber("/vn_100/ins_data",ins_data,ins_data_callback)
+    rospy.Subscriber("/tiburon/ins_data",ins_data,ins_data_callback)
     wb.save("pid_data.xls")
     rospy.spin()

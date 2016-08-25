@@ -99,14 +99,14 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		g++;
 		if(g == 2)        //thruster off
 		{
-			cout<<"thruster off\n";
+			//cout<<"thruster off\n";
 		 	g = 0;
 			msg.data = 3;
 			thruster_but_pub.publish(msg);
 		}
 		else if(g == 1)   //thruster on
 		{
-			cout<<"thruster on\n";
+			//cout<<"thruster on\n";
 			msg.data = 2;
 			thruster_but_pub.publish(msg);	
 		}
@@ -114,7 +114,7 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 
 	else if(joy->buttons[thruster_init] == 1)
 	{
-		cout<<"thruster initialized\n";
+		//cout<<"thruster initialized\n";
 		msg.data = 1;
 		thruster_but_pub.publish(msg);
 	}
@@ -139,8 +139,8 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		else thruster_controller_2 = 0;	
 	}
 
-	if(thruster_controller != 0)
-		cout<<"thruster_controller="<<thruster_controller<<endl;
+	//if(thruster_controller != 0)
+		//cout<<"thruster_controller="<<thruster_controller<<endl;
 	//thruster on: data = 2, off: data=3,initialize : data=1
 	//twist_pub_.publish(twist);
 }
@@ -148,7 +148,7 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 int main(int argc, char** argv)
 {
 	ros::init(argc,argv,"thruster_control_joy");
-	cout<<"Joystick node initialized\n";
+	//cout<<"Joystick node initialized\n";
 	Thruster thruster;
 	ros::Rate loop_rate(10);
 
@@ -176,7 +176,7 @@ int main(int argc, char** argv)
 			if(thruster.f == 1) //runmode on
 			{
 				//NOTE: msgf and msgb can't be simply same
-				cout<<"runmode on\n";
+				//cout<<"runmode on\n";
 				if(prev_msgf != 2000)
 				{
 					msgf.data = prev_msgf + 2;
@@ -190,12 +190,12 @@ int main(int argc, char** argv)
 				}
 				else msgb.data = 2000;
 
-				cout<<"msgf="<<msgf.data<<endl;
-				cout<<"msgb="<<msgb.data<<endl;
+				//cout<<"msgf="<<msgf.data<<endl;
+				//cout<<"msgb="<<msgb.data<<endl;
 			}
 			else				//runmode off
 			{
-				cout<<"runmode off\n";
+				//cout<<"runmode off\n";
 				if(prev_msgb != 2000)
 				{
 					msgf.data = prev_msgf + 2;
@@ -203,13 +203,13 @@ int main(int argc, char** argv)
 				}
 				else msgf.data = 2000;
 
-				cout<<"msgf="<<msgf.data<<endl;
+				//cout<<"msgf="<<msgf.data<<endl;
 			}
 		}
 
 		else if(thruster_controller_2 == 1 && thruster.f == 0) //runmode off, up arrow
 		{
-			cout<<"runmode off\n";
+			//cout<<"runmode off\n";
 			if(prev_msgf != 1000)
 			{
 				msgf.data = prev_msgf - 2;
@@ -217,14 +217,14 @@ int main(int argc, char** argv)
 			}
 			else msgf.data = 1000;
 
-			cout<<"msgf="<<msgf.data<<endl;
+			//cout<<"msgf="<<msgf.data<<endl;
 		}
 
 		else if(thruster_controller == -1 ) //A button
 		{
 			if(thruster.f == 1) //runmode on
 			{
-				cout<<"runmode on\n";
+				//cout<<"runmode on\n";
 				if(prev_msgf != 1000)
 				{
 					msgf.data = prev_msgf - 2;
@@ -238,25 +238,25 @@ int main(int argc, char** argv)
 				}
 				else msgb.data = 1000;
 
-				cout<<"msgf="<<msgf.data<<endl;
-				cout<<"msgb="<<msgb.data<<endl;
+				//cout<<"msgf="<<msgf.data<<endl;
+				//cout<<"msgb="<<msgb.data<<endl;
 			}
 			else				//runmode off
 			{
-				cout<<"runmode off\n";
+				//cout<<"runmode off\n";
 				if(prev_msgb != 2000)
 				{
 					msgb.data = prev_msgb + 2;
 					prev_msgb = msgb.data;
 				}
 				else msgb.data = 2000;
-				cout<<"msgb="<<msgb.data<<endl;
+				//cout<<"msgb="<<msgb.data<<endl;
 			}
 		}
 
 		else if(thruster_controller_2 == -1 && thruster.f == 0) //runmode off, down arrow
 		{
-			cout<<"runmode off\n";
+			//cout<<"runmode off\n";
 			if(prev_msgb != 1000)
 			{
 				msgb.data = prev_msgb - 2;
@@ -264,14 +264,14 @@ int main(int argc, char** argv)
 			}
 			else msgb.data = 1000;
 
-			cout<<"msgb="<<msgb.data<<endl;
+			//cout<<"msgb="<<msgb.data<<endl;
 		}
 
 		else if(thruster_controller == 2)
 		{
 			if(thruster.f == 1) //runmode on
 			{
-				cout<<"runmode on\n";
+				//cout<<"runmode on\n";
 				if(prev_msgr != 2000)
 				{
 					msgr.data = prev_msgr + 2;
@@ -285,12 +285,12 @@ int main(int argc, char** argv)
 				}
 				else msgl.data = 2000;
 
-				cout<<"msgr="<<msgr.data<<endl;
-				cout<<"msgl="<<msgl.data<<endl;
+				//cout<<"msgr="<<msgr.data<<endl;
+				//cout<<"msgl="<<msgl.data<<endl;
 			}
 			else				//runmode off
 			{
-				cout<<"runmode off\n";
+				//cout<<"runmode off\n";
 				if(prev_msgr != 2000)
 				{
 					msgr.data = prev_msgr + 2;
@@ -298,13 +298,13 @@ int main(int argc, char** argv)
 				}
 				else msgr.data = 2000;
 				
-				cout<<"msgr="<<msgr.data<<endl;
+				//cout<<"msgr="<<msgr.data<<endl;
 			}
 		}
 
 		else if(thruster_controller_2 == 2 && thruster.f == 0) //runmode off, down arrow
 		{
-			cout<<"runmode off\n";
+			//cout<<"runmode off\n";
 			if(prev_msgr != 1000)
 			{
 				msgr.data = prev_msgr - 2;
@@ -312,14 +312,14 @@ int main(int argc, char** argv)
 			}
 			else msgr.data = 1000;
 
-			cout<<"msgr="<<msgr.data<<endl;
+			//cout<<"msgr="<<msgr.data<<endl;
 		}
 
 		else if(thruster_controller == -2)
 		{
 			if(thruster.f == 1) //runmode on
 			{
-				cout<<"runmode on\n";
+				//cout<<"runmode on\n";
 				if(prev_msgr != 1000)
 				{
 					msgr.data = prev_msgr - 2;
@@ -333,25 +333,25 @@ int main(int argc, char** argv)
 				}
 				else msgl.data = 1000;
 				
-				cout<<"msgr="<<msgr.data<<endl;
-				cout<<"msgl="<<msgl.data<<endl;
+				//cout<<"msgr="<<msgr.data<<endl;
+				//cout<<"msgl="<<msgl.data<<endl;
 			}
 			else				//runmode off
 			{
-				cout<<"runmode off\n";
+				//cout<<"runmode off\n";
 				if(prev_msgl != 2000)
 				{
 					msgl.data = prev_msgl + 2;
 					prev_msgl = msgl.data;
 				}
 				else msgl.data = 2000;
-				cout<<"msgl="<<msgl.data<<endl;
+				//cout<<"msgl="<<msgl.data<<endl;
 			}
 		}
 		
 		else if(thruster_controller_2 == -2 && thruster.f == 0) //runmode off, down arrow
 		{
-			cout<<"runmode off\n";
+			//cout<<"runmode off\n";
 			if(prev_msgl != 1000)
 			{
 				msgl.data = prev_msgl - 2;
@@ -359,7 +359,7 @@ int main(int argc, char** argv)
 			}
 			else msgl.data = 1000;
 
-			cout<<"msgl="<<msgl.data<<endl;
+			//cout<<"msgl="<<msgl.data<<endl;
 		}
 
     	ros::spinOnce();

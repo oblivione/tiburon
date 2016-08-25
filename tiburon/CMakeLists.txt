@@ -87,6 +87,7 @@ generate_dynamic_reconfigure_options(
   cfg/pid.cfg
   cfg/pitchpid.cfg
   cfg/depthpid.cfg
+  cfg/yawPitchDepth.cfg
 )
 ###################################
 ## catkin specific configuration ##
@@ -160,6 +161,12 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
  target_link_libraries(thruster_joy_exe
    ${catkin_LIBRARIES}
  )
+
+
+#target_link_libraries(yawPitchDepth_config
+#   ${catkin_LIBRARIES}
+# )
+
 #add_dependencies(talker shaswat_control_generate_messages_cpp)
 ## Declare a cpp executable
 # add_executable(tiburon_node src/tiburon_node.cpp)
@@ -220,3 +227,4 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
+

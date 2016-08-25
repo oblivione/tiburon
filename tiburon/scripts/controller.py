@@ -7,31 +7,49 @@ from tiburon.cfg import depthparamsConfig
 import datetime,time
 from PID import PID
 
-currentDepth, currentPitch, currentYaw = -1, -1, -1
-depthCheckpoint, pitchCheckpoint, yawCheckpoint = -1, -1, -1
-KpDepth, KiDepth, KdDepth = 0.00, 0.00, 0.00
-KpYaw  , KiYaw  , KdYaw   = 0.00, 0.00, 0.00
-KpPitch, KiPitch, KdPitch = 0.00, 0.00, 0.00
-
 depthController = PID()
 pitchController = PID()
 yawController  = PID()
 
-depthController.currentVal = -1
-depthController.checkpoint 
+depthRecieved = 0
+pitchAndYawRecieved = 0
 
 def depthCallback(msg):
-    if msg.data>1300 or msg.data<980
-        currentDepth = currentDepth
-    else
-        currentDepth = msg.data
+    if msg.data<=1300 and msg.data>980
+        depthController.currentVal = msg.data
+    if depthRecieved == 0:
+        # Setting the checkpoint for depth as first recieved value
+        depthController.checkpoint = depthController.currentVal
+    depthRecieved = 1
 
 def insCallback(msg):
-    pitchCheckpoint = msg.YPR.y
-    yawCheckpoint   = msg.YPR.x
+    pitchController.currentVal = msg.YPR.y
+    yawController.currentVal = msg.YPR.x
+    if pitchAndYawRecieved == 0:
+        # Setting the initial checkpoint for pitch as 0 and yaw as first recieved value
+        pitchController.checkpoint = 0
+        yawController.checkpoint = yawController.currentVal
+    pitchAndYawRecieved = 1
 
-
-frontPitchPub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
-backPitchPub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
 depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback)
 insDataSub=rospy.Subscriber("/tiburon/ins_data",ins_data,insCallback)
+
+def main():
+    while(True):
+        # If either value is still not recieved, do nothing
+        if depthRecieved==0 or pitchAndYawRecieved==0:
+            continue
+        # Get the PID control signal for all
+        depthU = depthController.getError()
+        pitchU = pitchController.getError()
+        yawU = yawController.getError()
+        forwardU = 0
+
+        
+
+
+
+
+
+if __name__=='__main__':
+    main()

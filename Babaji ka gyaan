@@ -15,3 +15,11 @@ Only attributes within one device section may be used together in one
 rule, to match the device for which the link will be created
 $ sudo service udev restart
 Restart udev and reconnect the device. The link will be created.
+
+3. Things to be done on a fresh installation
+- install ros-indigo-desktop-full
+- create new workspace and clone tiburon package
+- run `chmod a+x -R .` on the package to make .py, .cfg, .msg etc 
+executables
+- set up udev rules as per point 2
+- install opencv, rosserial

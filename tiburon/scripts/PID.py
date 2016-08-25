@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import datetime,time
 class PID():
     def __init__(self):
         self.Kp = 0.00
@@ -15,12 +15,12 @@ class PID():
         self.IError = 0.00
         self.u = 0.00
 
-    def getError(self,current):
+    def getError(self):
+        self.presentTime = float(time.time())
         if self.pastTime == 0.00
             # to avoid derivative spike in the first iteration
             self.pastTime = self.presentTime
 
-        self.currentVal = current
         self.error = self.checkpoint - self.currentVal
         self.timeDiff = self.presentTime - self.pastTime
         self.IError += self.error * self.timeDiff

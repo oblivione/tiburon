@@ -6,6 +6,7 @@ import rospy
 import os
 import signal
 import thrustercontrol 
+from std_msgs.msg import String
 
 class Panel(QtGui.QMainWindow):
     def __init__(self, parent=None):
@@ -19,6 +20,7 @@ class Panel(QtGui.QMainWindow):
         self.ui.joystick_button.clicked.connect(self.joystick)
         self.ui.pid_Button.clicked.connect(self.pid)
         self.ui.camera_Button.clicked.connect(self.camera)
+        self.ui.enterButton.clicked.connect(self.textBox)
     def thruster(self):
         os.system('rosrun tiburon thrustercontrol.py &')
     def joystick(self):
@@ -29,7 +31,11 @@ class Panel(QtGui.QMainWindow):
 	    os.system('rosrun rqt_reconfigure rqt_reconfigure &') 
     def camera(self):
         os.system('rosrun tiburon show.py &')
-        
+    def textBox(self):
+        str=self.ui.textbox_lineEdit.getText() #find on net how to extract data
+        self.textboxpub=rospy.Publisher("thrusterstate",String,queue_size=1)
+        self.textboxpub.publish(str)
+
 def main():
     rospy.init_node("unified_ui_code")
     signal.signal(signal.SIGINT,signal.SIG_DFL) #for ctrl+c to cut the ui window

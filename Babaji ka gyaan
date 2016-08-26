@@ -5,7 +5,7 @@ same time, segmentation fault will occur.
 
 2. To give any USB device a constant name so that even if the port
 changes on reconnecting it, do the following
-$ udevinfo -a -p $(udevinfo -q path -n /dev/ttyUSB0) 
+$ udevadm info -a -p $(udevadm info -q path -n /dev/ttyUSB0) 
 Here ttyUSB0 is the device which is under consideration
 $ sudo nano /etc/udev/rules.d/10-tiburonRules.rules
 The files are executed in lexicographical order. So ensure that your

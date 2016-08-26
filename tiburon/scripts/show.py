@@ -15,7 +15,7 @@ from PyQt4 import QtGui, QtCore, Qt
 # ui.py is an auto-generated python file. Use QTCreator to make a
 # ui and convert it to a py file using the following command:-
 # pyuic4 mainWindow.ui -o ui.py
-from ui import Ui_MainWindow
+from camera_ui import Ui_MainWindow
 
 try:
     _encoding = QtGui.QApplication.UnicodeUTF8

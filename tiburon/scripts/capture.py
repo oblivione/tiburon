@@ -20,11 +20,11 @@ def main():
             capture2 = cv2.VideoCapture(int(sys.argv[3]))
             if count>=3:
                 capture3 = cv2.VideoCapture(int(sys.argv[4]))
-    pub1 = rospy.Publisher('auv_cam1',Image,queue_size=10)
-    pub2 = rospy.Publisher('auv_cam2',Image,queue_size=10)
-    pub3 = rospy.Publisher('auv_cam3',Image,queue_size=10)
+    pub1 = rospy.Publisher('auv_cam1',Image,queue_size=1)
+    pub2 = rospy.Publisher('auv_cam2',Image,queue_size=1)
+    pub3 = rospy.Publisher('auv_cam3',Image,queue_size=1)
     rospy.init_node('image_capture',anonymous=True)
-    rate = rospy.Rate(35)
+    rate = rospy.Rate(60)
     bridge = CvBridge()
     img1 = None
     img2 = None
@@ -53,4 +53,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    

@@ -27,7 +27,7 @@ void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
             case 4:
                 reverseThruster4 = 1 - reverseThruster4;
                 break;
-            default
+            default:
                 printf("Incorrect!\n");
         }
 }
@@ -45,9 +45,9 @@ void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void backcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    unsigned short target=msg->data*4;
     if(reverseThruster2)
         target=(3000-msg->data)*4;
-    unsigned short target=msg->data*4;
     unsigned char command[] = {0x84,3,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
@@ -56,9 +56,9 @@ void backcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    unsigned short target=msg->data*4;
     if(reverseThruster3)
         target=(3000-msg->data)*4;
-    unsigned short target=msg->data*4;
     unsigned char command[] = {0x84,4,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
@@ -67,9 +67,9 @@ void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    unsigned short target=msg->data*4;
     if(reverseThruster4)
         target=(3000-msg->data)*4;
-    unsigned short target=msg->data*4;
     unsigned char command[] = {0x84,5,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {

@@ -71,10 +71,10 @@ sensor_msgs
  )
 
 ## Generate actions in the 'action' folder
- add_action_files(
-   FILES
+# add_action_files(
+#   FILES
 #   Action2.action
- )
+# )
 
 ## Generate added messages and services with any dependencies listed here
  generate_messages(
@@ -139,14 +139,11 @@ ${catkin_LIBRARIES}
 vncp_services
 vn100
 )
-#add_executable(line_follow src/line_follower.cpp)
-#target_link_libraries(line_follow ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
-
-#add_executable( send_to_arduino src/send_to_arduino.cpp
-#)
-#target_link_libraries(send_to_arduino
-  # ${catkin_LIBRARIES}
- #)
+add_executable(thruster_controller src/thruster_controller.cpp)
+target_link_libraries(thruster_controller ${catkin_LIBRARIES})
+target_link_libraries(thruster_controller
+   ${catkin_LIBRARIES}
+)
 #add_dependencies(send_to_arduino tiburon_generate_messages_cpp)
 add_executable(rviz src/pub_rviz.cpp)
 target_link_libraries(rviz ${catkin_LIBRARIES})
@@ -227,4 +224,3 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-

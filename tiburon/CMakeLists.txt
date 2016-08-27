@@ -139,15 +139,16 @@ ${catkin_LIBRARIES}
 vncp_services
 vn100
 )
-#add_executable(line_follow src/line_follower.cpp)
-#target_link_libraries(line_follow ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
+add_executable(thruster_controller src/thruster_controller.cpp)
+target_link_libraries(thruster_controller ${OpenCV_LIBRARIES} ${catkin_LIBRARIES})
 
-#add_executable( send_to_arduino src/send_to_arduino.cpp
-#)
+
+#add_executable( send_to_arduino src/send_to_arduino.cpp)
 #target_link_libraries(send_to_arduino
   # ${catkin_LIBRARIES}
  #)
-#add_dependencies(send_to_arduino tiburon_generate_messages_cpp)
+add_dependencies(thruster_controller  tiburon_generate_messages_cpp)
+
 add_executable(rviz src/pub_rviz.cpp)
 target_link_libraries(rviz ${catkin_LIBRARIES})
 

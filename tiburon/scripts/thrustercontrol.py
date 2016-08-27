@@ -22,7 +22,7 @@ class auvthrusterpanel(QtGui.QMainWindow):
         self.thrusterstatepub=rospy.Publisher("thrusterstate",UInt16,queue_size=1)
         self.frontpitchspeedpub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
         self.backpitchspeedpub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
-        self.sideleftsppedpub=rospy.Publisher("sideleftspeed",UInt16,queue_size=1)
+        self.sideleftspeedpub=rospy.Publisher("sideleftspeed",UInt16,queue_size=1)
         self.siderightspeedpub=rospy.Publisher("siderightspeed",UInt16,queue_size=1)
         self.motherboardstatepub=rospy.Publisher("motherboardstate",UInt16,queue_size=1)
         self.thrusterreversepub=rospy.Publisher("thrusterreverse",UInt16,queue_size=1)
@@ -61,6 +61,10 @@ class auvthrusterpanel(QtGui.QMainWindow):
     def thrustersinitialize(self):
         self.thrusterstatepub.publish(1)
         self.a=2
+        self.frontpitchspeedpub.publish(1500)
+        self.backpitchspeedpub.publish(1500)
+        self.sideleftspeedpub.publish(1500)
+        self.siderightspeedpub.publish(1500)
     def thrusterson(self):
         if self.a==2:
             self.thrusterstatepub.publish(2)
@@ -94,7 +98,7 @@ class auvthrusterpanel(QtGui.QMainWindow):
             self.frontpitchspeedpub.publish(self.ui.back_pitch_slider.value())
             self.ui.front_pitch_val.setText(str(self.ui.back_pitch_slider.value()))
     def sideleftspeed(self):
-        self.sideleftsppedpub.publish(self.ui.side_left_slider.value())
+        self.sideleftspeedpub.publish(self.ui.side_left_slider.value())
         self.ui.side_left_val.setText(str(self.ui.side_left_slider.value()))
         if self.ui.checkBox.isChecked():
             self.siderightspeedpub.publish(self.ui.side_left_slider.value())
@@ -103,7 +107,7 @@ class auvthrusterpanel(QtGui.QMainWindow):
         self.siderightspeedpub.publish(self.ui.side_right_slider.value())
         self.ui.side_right_val.setText(str(self.ui.side_right_slider.value()))
         if self.ui.checkBox.isChecked():
-            self.sideleftsppedpub.publish(self.ui.side_right_slider.value())
+            self.sideleftspeedpub.publish(self.ui.side_right_slider.value())
             self.ui.side_left_val.setText(str(self.ui.side_right_slider.value()))
 
 def main():

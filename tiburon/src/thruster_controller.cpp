@@ -10,8 +10,16 @@
 #include <termios.h>
 #endif
 int fd;
+<<<<<<< HEAD
+void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
+{
+unsigned short target=msg->data*4;
+unsigned char command[] = {0x84,0,target & 0x7F,target >> 7 & 0x7F};
+if(write(fd,command,sizeof(command))==-1)
+=======
 int reverseThruster1 = 0, reverseThruster2 = 0, reverseThruster3 = 0, reverseThruster4 = 0;
 void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
+>>>>>>> 4dc432545db148f634660807e907124336a75a95
 {
         switch(msg->data)
         {
@@ -45,6 +53,32 @@ void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void backcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+<<<<<<< HEAD
+unsigned short target=msg->data*4;
+unsigned char command[] = {0x84,2,target & 0x7F,target >> 7 & 0x7F};
+if(write(fd,command,sizeof(command))==-1)
+{
+ROS_INFO("error writing to back thruster");
+}
+}
+void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
+{
+unsigned short target=msg->data*4;
+unsigned char command[] = {0x84,3,target & 0x7F,target >> 7 & 0x7F};
+if(write(fd,command,sizeof(command))==-1)
+{
+ROS_INFO("error writing to left thruster");
+}
+}
+void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
+{
+unsigned short target=msg->data*4;
+unsigned char command[] = {0x84,4,target & 0x7F,target >> 7 & 0x7F};
+if(write(fd,command,sizeof(command))==-1)
+{
+ROS_INFO("error writing to right thruster");
+}
+=======
     unsigned short target=msg->data*4;
     if(reverseThruster2)
         target=(3000-msg->data)*4;
@@ -75,6 +109,7 @@ void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
     {
         ROS_INFO("error writing to right thruster");
     }
+>>>>>>> 4dc432545db148f634660807e907124336a75a95
 }
 int main(int argc, char* argv[])
 {

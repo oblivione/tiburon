@@ -10,7 +10,7 @@ Here ttyUSB0 is the device which is under consideration
 $ sudo nano /etc/udev/rules.d/10-tiburonRules.rules
 The files are executed in lexicographical order. So ensure that your
 rule starts with the proper name
-$ ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",SYMLINK+="auv_vn100"
+ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",SYMLINK+="auv_vn100"
 Only attributes within one device section may be used together in one
 rule, to match the device for which the link will be created
 $ sudo service udev restart
@@ -23,3 +23,10 @@ Restart udev and reconnect the device. The link will be created.
 executables
 - set up udev rules as per point 2
 - install opencv, rosserial
+
+4. To connect to auv without password via ssh run on your laptop:-
+$ ssh-keygen
+$ ssh-copy-id auv-nitr@192.168.61.154
+$ ssh-add
+Try connecting. Should work.
+

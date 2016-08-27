@@ -8,11 +8,12 @@ import datetime,time
 import math
 import numpy as np
 from PID import PID
+from AngularPID import AngularPID
 from vehicle import VehicleParams
 
 depthController = PID()
-pitchController = PID()
-yawController  = PID()
+pitchController = AngularPID()
+yawController  = AngularPID()
 
 depthReceived = 0
 pitchAndYawReceived = 0
@@ -108,8 +109,8 @@ def main():
 
         '''
 
-        _sin = math.sin(toRadian(pitchController.currentVal))
-        _cos = math.cos(toRadian(pitchController.currentVal))
+        _sin = math.sin(pitchController.currentVal/180 * math.pi)
+        _cos = math.cos(pitchController.currentVal/180 * math.pi)
         A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [-vp.x1, vp.x2, 0, 0], [0, 0, vp.x3, vp.x4]])
         b = np.array([depthU+ vp.B - vp.mass*vp.gravity, 0, pitchU, yawU])
         F1,F2,F3,F4 = np.linalg.solve(A,b)

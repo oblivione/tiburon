@@ -117,6 +117,18 @@ void Thruster::joyCallback(const sensor_msgs::Joy::ConstPtr& joy)
 		//cout<<"thruster initialized\n";
 		msg.data = 1;
 		thruster_but_pub.publish(msg);
+		std_msgs::UInt16 msgf; //front
+		std_msgs::UInt16 msgb; //back
+		std_msgs::UInt16 msgl; //left
+		std_msgs::UInt16 msgr; //right
+		msgf.data = 1500;  
+		msgb.data = 1500; 
+		msgl.data = 1500;  
+		msgr.data = 1500;  
+		frontpitchspeedPub.publish(msgf);
+		backpitchspeedPub.publish(msgb);
+		siderightspeedPub.publish(msgr);
+		sideleftspeedPub.publish(msgl);	
 	}
 
 	

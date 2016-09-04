@@ -138,9 +138,9 @@ def main():
         elif F3<=-vp.thrusterMin*0.7:
             targetLeftSpeed = 1480 - (((-F3-vp.thrusterMin*0.7)/vp.thrusterRatioB)**0.5)
 
-        if F4>=vp.thrusterMin:
+        if F4>=vp.thrusterMinForRightThruster:
             targetRightSpeed = (((F4 - vp.thrusterMinForRightThruster)/vp.thrusterRatioFRight)**0.5)+1520
-        elif F4<=-vp.thrusterMin*0.7:
+        elif F4<=-vp.thrusterMinForRightThruster*0.7:
             targetRightSpeed = 1480 - (((-F4-vp.thrusterMinForRightThruster*0.7)/vp.thrusterRatioBRight)**0.5)
 
         if(targetFrontSpeed>1900):

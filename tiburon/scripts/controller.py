@@ -42,25 +42,25 @@ def insCallback(msg):
 def callback(config,level):
     global depthController, pitchController, yawController
     if depthController.Kp != config.kp_depth or depthController.Ki != config.ki_depth or depthController.Kd !=config.kd_depth:
-        depthController.Kp = config.kp_depth
-        depthController.Ki = config.ki_depth
+        depthController.Kp = config.kp_depth/400.0
+        depthController.Ki = config.ki_depth/1000.0
         depthController.Kd = config.kd_depth
         depthController.IError = 0.00
     if pitchController.Kp != config.kp_pitch or pitchController.Ki != config.ki_pitch or pitchController.Kd !=config.kd_pitch:
-        pitchController.Kp = config.kp_pitch
-        pitchController.Ki = config.ki_pitch
+        pitchController.Kp = config.kp_pitch/30.0
+        pitchController.Ki = config.ki_pitch/1000.0
         pitchController.Kd = config.ki_pitch
         pitchController.IError = 0.00
     if yawController.Kp != config.kp_yaw or yawController.Ki != config.ki_yaw or yawController.Kd !=config.kd_yaw:
-        yawController.Kp = config.kp_yaw
-        yawController.Ki = config.ki_yaw
+        yawController.Kp = config.kp_yaw/50.0
+        yawController.Ki = config.ki_yaw/1000.0
         yawController.Kd = config.kd_yaw
         yawController.IError = 0.00
 
     depthController.checkpoint = config.setpoint_depth
     pitchController.checkpoint = config.setpoint_pitch
     yawController.checkpoint = config.setpoint_yaw
-    print "Act Kp: ",config.kp_depth
+    print "Act Kp: ",config.kp_pitch
     print "D: ",depthController.checkpoint,"Y: ",yawController.checkpoint,"P: ",pitchController.checkpoint
     return config
 
@@ -102,14 +102,14 @@ def main():
           F1 cos t + F2 cos t + F3 sin t + F4 sin t = ma + B - mg    = U1 + B - mg
         - F1 sin t - F2 sin t + F3 cos t + F4 cos t = 0              = U2
           F1 x1    - F2 x2                          = Ixx Axx - B xB = U3 + B xB
-                                F3 x3    - F4 x4    = Izz Azz        = U4
+                                F3 x3    - F4 x4    = Izz Azz        = U4 + Jw1 + Jw2
 
         Matrix form
          ==                                  ==   ==    ==         ==            ==
         |   cos t    cos t    sin t    sin t   | |   F1   |       |   U1 + B - mg  |
         |  -sin t   -sin t    cos t    cos t   | |   F2   |  ===  |       00       |
         |    x1      -x2       00       00     | |   F3   |  ===  |   U3 + B xB    |
-        |    00       00       x3      -x4     | |   F4   |       |       U4       |
+        |    00       00       x3      -x4     | |   F4   |       | U4 + Jw1 + Jw2 |
          ==                                  ==   ==    ==         ==            ==
 
         '''
@@ -117,11 +117,11 @@ def main():
         _sin = math.sin(pitchController.currentVal/180 * math.pi)
         _cos = math.cos(pitchController.currentVal/180 * math.pi)
         A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [vp.x1, -vp.x2, 0, 0], [0, 0, vp.x3, -vp.x4]])
-        b = np.array([depthU+ vp.B - vp.weight, 0, pitchU + vp.B * vp.xB, yawU])
+        b = np.array([depthU+ vp.B - vp.weight, 0, pitchU + vp.B * vp.xB, yawU + vp.J*thruster1 + vp.J*thruster2])
         print A
         print b
         F1,F2,F3,F4 = np.linalg.solve(A,b)
-        print "U1: ",depthU,"Kp: ",depthController.Kp
+        print "U1: ",depthU,"Kp: ",pitchController.Kp, "U3 :",pitchU, "U4: ",yawU
         print "F1: ",F1,"F2: ",F2,"F3: ",F3,"F4: ",F4
         if F1>=vp.thrusterMin:
             targetFrontSpeed = (((F1 - vp.thrusterMin)/vp.thrusterRatioF)**0.5)+1520
@@ -163,25 +163,41 @@ def main():
         elif(targetRightSpeed<1100):
             targetRightSpeed = 1100
 
-        if(targetFrontSpeed>1500 and 1500+thruster1<=targetFrontSpeed):
+        if(targetFrontSpeed>=1500 and 1500+thruster1<=targetFrontSpeed):
 		    thruster1 = thruster1+0.1
-        elif(targetFrontSpeed<1500 and 1500+thruster1>=targetFrontSpeed):
+        elif(targetFrontSpeed>=1500 and 1500+thruster1>targetFrontSpeed):
+		    thruster1 = thruster1 - 0.1
+        if(targetFrontSpeed<=1500 and 1500+thruster1<targetFrontSpeed):
+		    thruster1 = thruster1+0.1
+        elif(targetFrontSpeed<=1500 and 1500+thruster1>=targetFrontSpeed):
 		    thruster1 = thruster1 - 0.1
 
-        if(targetBackSpeed>1500 and 1500+thruster2<=targetBackSpeed):
-            thruster2 = thruster2+0.1
-        elif(targetBackSpeed<1500 and 1500+thruster2>=targetBackSpeed):
-            thruster2 = thruster2 - 0.1
+        if(targetBackSpeed>=1500 and 1500+thruster2<=targetBackSpeed):
+		    thruster2 = thruster2+0.1
+        elif(targetBackSpeed>=1500 and 1500+thruster2>targetBackSpeed):
+		    thruster2 = thruster2 - 0.1
+        if(targetBackSpeed<=1500 and 1500+thruster2<targetBackSpeed):
+		    thruster2 = thruster2+0.1
+        elif(targetBackSpeed<=1500 and 1500+thruster2>=targetBackSpeed):
+		    thruster2 = thruster2 - 0.1
 
-        if(targetLeftSpeed>1500 and 1500+thruster3<=targetLeftSpeed):
-            thruster3 = thruster3+0.1
-        elif(targetLeftSpeed<1500 and 1500+thruster3>=targetLeftSpeed):
-            thruster3 = thruster3 - 0.1
+        if(targetLeftSpeed>=1500 and 1500+thruster3<=targetLeftSpeed):
+		    thruster3 = thruster3+0.1
+        elif(targetLeftSpeed>=1500 and 1500+thruster3>targetLeftSpeed):
+		    thruster3 = thruster3 - 0.1
+        if(targetLeftSpeed<=1500 and 1500+thruster3<targetLeftSpeed):
+		    thruster3 = thruster3+0.1
+        elif(targetLeftSpeed<=1500 and 1500+thruster3>=targetLeftSpeed):
+		    thruster3 = thruster3 - 0.1
 
-        if(targetRightSpeed>1500 and 1500+thruster4<=targetRightSpeed):
-            thruster4 = thruster4+0.1
-        elif(targetRightSpeed<1500 and 1500+thruster4>=targetRightSpeed):
-            thruster4 = thruster4 - 0.1
+        if(targetRightSpeed>=1500 and 1500+thruster4<=targetRightSpeed):
+		    thruster4 = thruster4+0.1
+        elif(targetRightSpeed>=1500 and 1500+thruster4>targetRightSpeed):
+		    thruster4 = thruster4 - 0.1
+        if(targetRightSpeed<=1500 and 1500+thruster4<targetRightSpeed):
+		    thruster4 = thruster4+0.1
+        elif(targetRightSpeed<=1500 and 1500+thruster4>=targetRightSpeed):
+		    thruster4 = thruster4 - 0.1
 
     	print "TForward:",targetFrontSpeed,"TBack:",targetBackSpeed,"TLeft:",targetLeftSpeed,"TRight:",targetRightSpeed
         print "Forward:",1500+thruster1,"Back:",1500+thruster2,"Left:",1500+thruster3,"Right:",1500+thruster4

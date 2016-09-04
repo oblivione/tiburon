@@ -20,3 +20,5 @@ class VehicleParams():
         self.thrusterRatioB = self.thrusterRatioF * 0.7
         self.thrusterRatioFRight = self.thrusterRatioF * 0.8
         self.thrusterRatioBRight = self.thrusterRatioB * 0.8
+
+        self.J = 0.00

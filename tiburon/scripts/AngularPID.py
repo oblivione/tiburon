@@ -18,7 +18,7 @@ class AngularPID():
 
     def getError(self):
         self.presentTime = float(time.time())
-        if self.pastTime == 0.00
+        if self.pastTime == 0.00:
             # to avoid derivative spike in the first iteration
             self.pastTime = self.presentTime
 

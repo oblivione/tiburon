@@ -83,7 +83,7 @@ class Gui(QtGui.QMainWindow):
         self._timer.timeout.connect(self.play)
 	    # QTimer.start(int msec) starts or restarts the timer
 	    # at an interval of msec milliseconds
-        self._timer.start(50)
+        self._timer.start(10)
         self.update()
  
     def play(self):

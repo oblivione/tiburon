@@ -46,6 +46,7 @@ class auvthrusterpanel(QtGui.QMainWindow):
         self.ui.back_pitch_slider.setRange(1000,2000)
         self.ui.side_left_slider.setRange(1000,2000)
         self.ui.side_right_slider.setRange(1000,2000)
+
         self.ui.front_pitch_slider.setValue(1500)
         self.ui.back_pitch_slider.setValue(1500)
         self.ui.side_left_slider.setValue(1500)

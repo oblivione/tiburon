@@ -141,10 +141,7 @@ vn100
 )
 add_executable(thruster_controller src/thruster_controller.cpp)
 target_link_libraries(thruster_controller ${catkin_LIBRARIES})
-target_link_libraries(thruster_controller
-   ${catkin_LIBRARIES}
-)
-#add_dependencies(send_to_arduino tiburon_generate_messages_cpp)
+
 add_executable(rviz src/pub_rviz.cpp)
 target_link_libraries(rviz ${catkin_LIBRARIES})
 

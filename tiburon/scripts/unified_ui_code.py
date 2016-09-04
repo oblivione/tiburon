@@ -13,6 +13,7 @@ class Panel(QtGui.QMainWindow):
         QtGui.QWidget.__init__(self,parent)
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+        text_str=""
         #self.connect(self.thread, SIGNAL("finished()"), self.updateUi)
         self.button()
     def button(self):
@@ -32,9 +33,11 @@ class Panel(QtGui.QMainWindow):
     def camera(self):
         os.system('rosrun tiburon show.py &')
     def textBox(self):
-        str=self.ui.textbox_lineEdit.getText() #find on net how to extract data
-        self.textboxpub=rospy.Publisher("thrusterstate",String,queue_size=1)
-        self.textboxpub.publish(str)
+        self.text_str=""
+        self.text_str=self.ui.textbox_lineEdit.text() #find on net how to extract data
+        print self.text_str
+        self.textboxpub=rospy.Publisher("what_is_up",String,queue_size=1)
+        self.textboxpub.publish(str(self.text_str))
 
 def main():
     rospy.init_node("unified_ui_code")

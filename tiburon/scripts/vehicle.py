@@ -13,5 +13,10 @@ class VehicleParams():
 
         self.thrusterMax = 2.72 #in kgf
         self.thrusterMin = 0.45 #in kgf
+        self.thrusterMaxForRightThruster = 2.72 * 0.8
+        self.thrusterMinForRightThruster = 0.45 * 0.8
+
         self.thrusterRatioF = (self.thrusterMax-self.thrusterMin)/((1900 - 1520)**2)
         self.thrusterRatioB = self.thrusterRatioF * 0.7
+        self.thrusterRatioFRight = self.thrusterRatioF * 0.8
+        self.thrusterRatioBRight = self.thrusterRatioB * 0.8

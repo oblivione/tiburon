@@ -63,7 +63,7 @@ class pidPanel(QtGui.QMainWindow):
         self.r = self.r + 1
         if(self.r == 2):
             self.r = 0
-        self.resetPub = rospy.Publisher("reset_vn_100", UInt16, queue_size=1)
+        self.resetPub = rospy.Publisher("reset_vn100", UInt16, queue_size=1)
         self.resetPub.publish(self.r)
 
     def update(self):

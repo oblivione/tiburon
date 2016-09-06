@@ -56,6 +56,16 @@ class pidPanel(QtGui.QMainWindow):
         self._timer.timeout.connect(self.update)
         self._timer.start(10)
 
+        self.r = 0
+        self.ui.resetButton.clicked.connect(self.reset)
+
+    def reset(self):
+        self.r = self.r + 1
+        if(self.r == 2):
+            self.r = 0
+        self.resetPub = rospy.Publisher("reset_vn_100", UInt16, queue_size=1)
+        self.resetPub.publish(self.r)
+
     def update(self):
         global setpoint_depth
         global setpoint_pitch

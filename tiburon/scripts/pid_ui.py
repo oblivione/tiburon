@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Wed Sep  7 00:27:59 2016
+# Created: Wed Sep  7 00:36:36 2016
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -172,8 +172,8 @@ class Ui_MainWindow(object):
         self.label_16 = QtGui.QLabel(self.groupBox_6)
         self.label_16.setGeometry(QtCore.QRect(10, 150, 91, 16))
         self.label_16.setObjectName(_fromUtf8("label_16"))
-        self.pushButton = QtGui.QPushButton(self.centralWidget)
-        self.pushButton.setGeometry(QtCore.QRect(470, 100, 131, 61))
+        self.resetButton = QtGui.QPushButton(self.centralWidget)
+        self.resetButton.setGeometry(QtCore.QRect(470, 100, 131, 61))
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -310,8 +310,8 @@ class Ui_MainWindow(object):
         brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, brush)
-        self.pushButton.setPalette(palette)
-        self.pushButton.setObjectName(_fromUtf8("pushButton"))
+        self.resetButton.setPalette(palette)
+        self.resetButton.setObjectName(_fromUtf8("resetButton"))
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 1246, 25))
@@ -351,6 +351,6 @@ class Ui_MainWindow(object):
         self.label_10.setText(_translate("MainWindow", "kd:", None))
         self.label_13.setText(_translate("MainWindow", "checkpoint:", None))
         self.label_16.setText(_translate("MainWindow", "setpoint:", None))
-        self.pushButton.setText(_translate("MainWindow", "Reset vn_100", None))
+        self.resetButton.setText(_translate("MainWindow", "Reset vn_100", None))
 
 from pyqtgraph import PlotWidget

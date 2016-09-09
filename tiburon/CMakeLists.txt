@@ -4,6 +4,8 @@ project(tiburon)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
+
+
 find_package(catkin REQUIRED
 tf
 rospy
@@ -18,7 +20,6 @@ cv_bridge
 #opencv2
 sensor_msgs
 )
-#find_package(OpenCV)
 
 
 ## System dependencies are found with CMake's conventions
@@ -61,6 +62,8 @@ sensor_msgs
    send_arduino.msg
    ins_data.msg
    auvcontrol.msg
+   delta_velocity_data.msg
+
  )
 
 ## Generate services in the 'srv' folder
@@ -141,6 +144,11 @@ vn100
 )
 add_executable(thruster_controller src/thruster_controller.cpp)
 target_link_libraries(thruster_controller ${catkin_LIBRARIES})
+
+
+add_executable(velocity_node src/true_vel.cpp)
+target_link_libraries(velocity_node ${catkin_LIBRARIES})
+
 
 add_executable(rviz src/pub_rviz.cpp)
 target_link_libraries(rviz ${catkin_LIBRARIES})

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String,UInt16,Float32,Float64
-from tiburon.msg import ins_data
+from tiburon.msg import ins_data, delta_velocity_data
 from dynamic_reconfigure.server import Server
 from tiburon.cfg import yawPitchDepthConfig
 import datetime,time
@@ -17,6 +17,9 @@ yawController  = AngularPID()
 
 depthReceived = 0
 pitchAndYawReceived = 0
+
+# def velCallback(msg):
+
 
 def depthCallback(msg):
     print "Current D",msg.data
@@ -66,10 +69,12 @@ def callback(config,level):
 
 depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback)
 insDataSub=rospy.Subscriber("/tiburon/ins_data",ins_data,insCallback)
+# deltaVelSub=rospy.Subscriber("/tiburon/Delta_velocity",,velCallback)
 frontPitchPub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
 backPitchPub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
 sideLeftSpeedPub=rospy.Publisher("/sideleftspeed",UInt16,queue_size=1)
 sideRightSpeedPub=rospy.Publisher("/siderightspeed",UInt16,queue_size=1)
+
 
 def main():
     global frontPitchPub, backPitchPub, sideLeftSpeedPub, sideRightSpeedPub

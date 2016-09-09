@@ -4,14 +4,20 @@
 #include<stdlib.h>
 //vectornav source header
 #include "vectornav.h"
+#include "vn100.h"
 #include<ros/ros.h>
 //adding message type headers
 #include <tiburon/sensor_data.h>
 #include<tiburon/ins_data.h>
 #include<tiburon/YPR.h>
+#include<tiburon/delta_velocity_data.h>
+#include<cmath>
+
 //Publishers
 	ros::Publisher pubsens_data;
 	ros::Publisher pubins_data;
+	ros::Publisher pubvelocity_data;
+	
 //Device
 	Vn100 vn100;
 	std::string imu_frame_id;
@@ -169,6 +175,35 @@ void publish_device()
 			}
 		}
 	}
+	if(pubvelocity_data.getNumSubscribers()>0)
+	{
+		VnVector3 delta_Velocity,delta_Theta;
+		float delta_Time;
+		vn_error = vn100_getdeltaVelocity(&vn100,&delta_Time,&delta_Theta,&delta_Velocity);
+		if(vn_error!=VNERR_NO_ERROR)
+		{
+			vnerror_msg(vn_error,vn_err_msg);
+			ROS_INFO("error in reading the velocity data:%s",vn_err_msg.c_str());
+		}
+		else
+		{
+			tiburon::delta_velocity_data velocity_data;
+			velocity_data.header.seq = seq;
+			velocity_data.header.stamp=timestamp;
+			velocity_data.header.frame_id=imu_frame_id;
+			velocity_data.delta_Time=delta_Time;
+			velocity_data.delta_Theta.x=delta_Theta.c0;
+			velocity_data.delta_Theta.y=delta_Theta.c1;
+			velocity_data.delta_Theta.y=delta_Theta.c1;
+			velocity_data.delta_Velocity.x=delta_Velocity.c0;
+			velocity_data.delta_Velocity.y=delta_Velocity.c1;
+			velocity_data.delta_Velocity.z=delta_Velocity.c2;
+			pubvelocity_data.publish(velocity_data);
+			
+		}
+	}
+	
+
 }
 //defining timer publication
 void publish_timer(const ros::TimerEvent&)
@@ -226,13 +261,21 @@ int main(int argc,char** argv)
 	ros::NodeHandle np("~");        //creating public and private nodehandlers to ha                               ndle ros publish services and private parameters
 	std::string port;
 	int baudrate,publish_rate,async_output_rate,async_output_type;
+	std::string enable,headingMode,filteringMode,tuningMode;
 	np.param<std::string>("serial_port",port,"/dev/ttyUSB0");
 	np.param<int>("serial_baud",baudrate,115200);
-	np.param<int>("publish_rate",publish_rate,10);
+	np.param<int>("publish_rate",publish_rate,60);
 	np.param<int>("async_output_type",async_output_type,0);
 	np.param<int>("async_output_rate",async_output_rate,6);//assigning params to                                                            variables
-	pubsens_data   =np.advertise<tiburon::sensor_data> ("sensor_data",1);
-	pubins_data    =np.advertise<tiburon::ins_data> ("ins_data",1);//Initializing                                                                   Publishers
+        np.param<std::string>("VPE_enable",enable,"1");
+	np.param<std::string>("VPE_headingMode",headingMode,"2");
+        np.param<std::string>("VPE_filteringMode",filteringMode,"1");
+	np.param<std::string>("VPE_tuningMode", tuningMode,"1");
+
+	pubsens_data  	 	=np.advertise<tiburon::sensor_data> ("sensor_data",1);
+	pubins_data    		=np.advertise<tiburon::ins_data> ("ins_data",1);//Initializing
+	pubvelocity_data	=np.advertise<tiburon::delta_velocity_data>("Delta_Velocity",1);                                                                   
+
 	ros::ServiceServer service=n.advertiseService("query_ins_data",send_data);
 	ROS_INFO("Ready to answer your queries regarding ins data");
 	VN_ERROR_CODE vn_err;         //dealing with vectornav errors
@@ -250,6 +293,17 @@ int main(int argc,char** argv)
 		);
 		exit(EXIT_FAILURE);
 	}
+
+	//enable vpe funtion 
+	
+	vn_err = vn100_getVpeControl(&vn100,(unsigned char*) enable.c_str(),(unsigned char*) headingMode.c_str(),(unsigned char*)filteringMode.c_str(),(unsigned char*) tuningMode.c_str());
+	if(vn_err!=VNERR_NO_ERROR)
+	{
+		vnerror_msg(vn_err,vn_error_msg);
+		ROS_FATAL("could not able to enable the VPE");	
+		exit(EXIT_FAILURE);
+	}
+
 	vn_err=vn100_setAsynchronousDataOutputType(&vn100,async_output_type,true);
 	if(vn_err!=VNERR_NO_ERROR)
 	{
@@ -258,6 +312,7 @@ int main(int argc,char** argv)
                 vn_error_msg.c_str());
                 exit(EXIT_FAILURE);
 	}
+
 //enabling ros timer to publish the data at the particular intervals
 	ros::Timer pub_timer;
    	if(async_output_type ==0)

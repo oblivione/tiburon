@@ -98,6 +98,9 @@ typedef struct {
 	VnVector3		angularRateBias;			/**< Angular rate estimated biases. */
 	VnVector3		attitudeVariance;			/**< Variance for the computed attitude. */
 	VnVector3		angularRateBiasVariance;	/**< Angular rate bias variance. */
+      VnVector3         deltaVelocity;
+      VnVector3         deltaTheta;
+      float          deltaTime;
 } Vn100CompositeData;
 
 /**
@@ -405,6 +408,8 @@ DLL_EXPORT VN_ERROR_CODE vn100_setAsynchronousDataOutputFrequency(Vn100* vn100, 
  * \return VectorNav error code.
  */
 DLL_EXPORT VN_ERROR_CODE vn100_getYawPitchRoll(Vn100* vn100, VnYpr* attitude);
+
+DLL_EXPORT VN_ERROR_CODE vn100_getdeltaVelocity(Vn100* vn100,float* deltaTime, VnVector3* attitude, VnVector3* del_velocity );
 
 /**
  * \brief Gets the values in the Attitude (Quaternion) register.

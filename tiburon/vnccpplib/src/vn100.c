@@ -196,7 +196,7 @@ void vn100_disableResponseChecking_threadSafe(Vn100* vn100);
  * \param[in]	cmdToSend
  * Pointer to the command data to transmit to the VN-100 device. Should be
  * null-terminated.
- * 
+ *
  * \return VectorNav error code.
  */
 VN_ERROR_CODE vn100_transaction(Vn100* vn100, const char* cmdToSend, const char* responseMatch);
@@ -281,11 +281,11 @@ VN_ERROR_CODE vn100_connect(Vn100* newVn100, const char* portName, int baudrate)
 	errorCode = vncp_event_create(&vn100Int->waitForThreadToStartServicingComPortEvent);
 	if (errorCode != VNERR_NO_ERROR)
 		return errorCode;
-	
+
 	errorCode = vncp_thread_startNew(&vn100Int->comPortServiceThreadHandle, &vn100_communicationHandler, newVn100);
 	if (errorCode != VNERR_NO_ERROR)
 		return errorCode;
-		
+
 	newVn100->isConnected = VN_TRUE;
 
 	errorCode = vncp_event_waitFor(vn100Int->waitForThreadToStartServicingComPortEvent, -1);
@@ -418,7 +418,7 @@ void* vn100_communicationHandler(void* vn100Obj)
 
 			/* See if we have even found the start of a response. */
 			if (readBuffer[curResponsePos] == '$') {
-				
+
 				/* Alright, we have found the start of a command. */
 				haveFoundStartOfCommand = VN_TRUE;
 				responseBuilderBufferPos = 0;
@@ -459,7 +459,7 @@ void vn100_processReceivedPacket(Vn100* vn100, char* buffer)
 
 	/* See if we should be checking for a command response. */
 	if (vn100_shouldCheckForResponse_threadSafe(vn100, responseMatch)) {
-		
+
 		/* We should be checking for a command response. */
 
 		/* Does the data packet match the command response we expect? */
@@ -508,7 +508,7 @@ VN_ERROR_CODE vn100_transaction(Vn100* vn100, const char* cmdToSend, const char*
 	/* We add one to the cmdToSend pointer to skip over the '$' at the beginning. */
 	/* We add one to the packetTail pointer so the "FF" string is overwritten with the checksum. */
 	vn100_checksum_computeAndReturnAsHex(cmdToSend + 1, packetTail + 1);
-	
+
 	vn100_enableResponseChecking_threadSafe(vn100, responseMatch);
 
 	vn100_writeData_threadSafe(vn100, cmdToSend, strlen(cmdToSend));
@@ -561,7 +561,7 @@ VN_BOOL vn100_shouldCheckForResponse_threadSafe(Vn100* vn100, char* responseMatc
 	vncp_criticalSection_enter(&vn100Int->critSecForResponseMatchAccess);
 
 	shouldCheckResponse = vn100Int->checkForResponse;
-	
+
 	if (shouldCheckResponse)
 		strcpy(responseMatchBuffer, vn100Int->cmdResponseMatchBuffer);
 
@@ -679,7 +679,7 @@ VN_ERROR_CODE vn100_knownMagneticDisturbance(Vn100* vn100, VN_BOOL isDisturbance
 
 	if (!vn100->isConnected)
 		return VNERR_NOT_CONNECTED;
-	
+
 	cmdToSend = isDisturbancePresent ? "$VNKMD,1" : "$VNKMD,0";
 
 	if (waitForResponse)
@@ -697,7 +697,7 @@ VN_ERROR_CODE vn100_knownAccelerationDisturbance(Vn100* vn100, VN_BOOL isDisturb
 
 	if (!vn100->isConnected)
 		return VNERR_NOT_CONNECTED;
-	
+
 	cmdToSend = isDisturbancePresent ? "$VNKAD,1" : "$VNKAD,0";
 
 	if (waitForResponse)
@@ -1983,6 +1983,62 @@ VN_ERROR_CODE vn100_getYawPitchRoll(Vn100* vn100, VnYpr* attitude)
 
 	return VNERR_NO_ERROR;
 }
+
+VN_ERROR_CODE vn100_getdeltaVelocity(Vn100* vn100, float* deltaTime, VnVector3* attitude ,VnVector3* del_velocity)
+{
+	const char* cmdToSend = "$VNRRG,80";
+	char delims[] = ",*";
+	char* result;
+	Vn100Internal* vn100Int;
+	int errorCode;
+	const char* responseMatch = "VNRRG,";
+
+	if (!vn100->isConnected)
+		return VNERR_NOT_CONNECTED;
+
+	vn100Int = vn100_getInternalData(vn100);
+
+	errorCode = vn100_transaction(vn100, cmdToSend, responseMatch);
+
+	if (errorCode != VNERR_NO_ERROR)
+		return errorCode;
+
+	result = strtok(vn100Int->cmdResponseBuffer, delims);  /* Returns VNRRG */
+	result = strtok(0, delims);                            /* Returns register ID */
+	result = strtok(0, delims);
+	//result = strtok(0, delims);
+	if(result == NULL)
+		return VNERR_INVALID_VALUE;
+	*deltaTime = (float) atof(result);
+	result = strtok(0,delims);
+	if (result == NULL)
+		return VNERR_INVALID_VALUE;
+	attitude->c0 = atof(result);
+	result = strtok(0, delims);
+	if (result == NULL)
+		return VNERR_INVALID_VALUE;
+	attitude->c1 = atof(result);
+	result = strtok(0, delims);
+	if (result == NULL)
+		return VNERR_INVALID_VALUE;
+	attitude->c2 = atof(result);
+	result = strtok(0, delims);
+	if (result == NULL)
+		return VNERR_INVALID_VALUE;
+	del_velocity->c0 = atof(result);
+	result = strtok(0, delims);
+	if (result == NULL)
+		return VNERR_INVALID_VALUE;
+	del_velocity->c1 = atof(result);
+	result = strtok(0, delims);
+	if (result == NULL)
+		return VNERR_INVALID_VALUE;
+	del_velocity->c2 = atof(result);
+
+	return VNERR_NO_ERROR;
+
+}
+
 
 VN_ERROR_CODE vn100_getQuaternion(Vn100* vn100, VnQuaternion* attitude)
 {

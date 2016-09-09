@@ -1,19 +1,20 @@
-#define thrusterrelay 11
-#define thrusterrelay1 10
-//#define frontrelay 12
-//#define backrelay 8
-//#define leftrelay 7
-//#define rightrelay 4
-//#define obcrelay 9
+
+/*
+2 MOTHERBOARD_SHORT
+8 BATTERY1_RELAY_ON
+9 BATTERY2_RELAY_ON
+*/
+#define thrusterrelay_1 8              
+#define thrusterrelay_2 9             
+//#define nano_relay 12                  
+#define motherboard_on 2 
+
 #include <ros.h>
 #include <std_msgs/UInt16.h>
 #include <Servo.h> 
 #include <Wire.h>
 #include <SparkFun_MS5803_I2C.h>
 #include <std_msgs/Float64.h>
-//#include <geometry_msgs/Vector3.h>
-//#include <geometry_msgs/Vector3.h>MS5803 sensor(ADDRESS_HIGH);
-
 
 ros::NodeHandle  nh;
 
@@ -28,10 +29,7 @@ double base_altitude = 1655.0;
 
 void fpsCb( const std_msgs::UInt16& msg)
 {
-  //digitalWrite(13,HIGH);
   front.writeMicroseconds(msg.data);
-  //delay(1000);
-  //digitalWrite(13,LOW);
 }
 void bpsCb(const std_msgs::UInt16& msg)
 {
@@ -49,124 +47,75 @@ void tsCb(const std_msgs::UInt16& msg)
 {
   if(msg.data==1)
   {
-    //digitalWrite(13,HIGH);
-   // front.writeMicroseconds(1000);
-   // back.writeMicroseconds(1000);
-  //  left.writeMicroseconds(1500);
-   // right.writeMicroseconds(1500);
-  //    delay(100);
-  //digitalWrite(13,LOW);
+    
   }
   else if(msg.data==2)
   {
-   /* digitalWrite(13,LOW);
-    digitalWrite(12,HIGH);
-    digitalWrite(8,HIGH);
-    digitalWrite(7,HIGH);*/
-    digitalWrite(11,HIGH);
-    digitalWrite(10,HIGH);
+    digitalWrite(thrusterrelay_1,HIGH);
+    digitalWrite(thrusterrelay_2,HIGH);
     
   }
   else if(msg.data==3)
   {
-    /*digitalWrite(13,LOW);
-    digitalWrite(12,LOW);
-    digitalWrite(8,LOW);
-    digitalWrite(7,LOW);*/
-    digitalWrite(11,LOW);
-     digitalWrite(10,LOW);
-  //digitalWrite(13,LOW);
+   
+    digitalWrite(thrusterrelay_1,LOW);
+     digitalWrite(thrusterrelay_2,LOW);
+    
   }
 }
 
 std_msgs::Float64 depth_msg;
-//std_msgs::Float64 c1_msg;
-//std_msgs::Float64 c2_msg;
-//std_msgs::Float64 c3_msg;
-//geometry_msgs::Vector3 depth_msg;
+
 ros::Subscriber<std_msgs::UInt16> fpssub("frontpitchspeed", &fpsCb );
 ros::Subscriber<std_msgs::UInt16> bpssub("backpitchspeed",&bpsCb);
 ros::Subscriber<std_msgs::UInt16> lssub("sideleftspeed",&lsCb);
 ros::Subscriber<std_msgs::UInt16> rssub("siderightspeed", &rsCb);
 ros::Subscriber<std_msgs::UInt16> tstate("thrusterstate",&tsCb);
-//ros::Subscriber<std_msgs::UInt16> threv("thrusterreverse",&trsCb);
 ros::Publisher  pub_depth("/depth_value",&depth_msg);
-//ros::Publisher   b_l_1("/voltage_c1",&depth_msg);
-//ros::Publisher   b_l_2("/voltage_c2",&depth_msg);
-//ros::Publisher   b_l_3("/voltage_c3",&depth_msg);
-//ros::Subscriber<std_msgs::UInt16> mstate("motherboardstate",&msCb);
-
-
-//ros::ServiceServer<depth_srv::Request, depth_srv::Response> server("depth_srv",&callback);
 
 
 void setup()
-{ 
+{
+    
    nh.initNode();
    Wire.begin();
- // front.attach(6);
- // back.attach(9);
- // left.attach(3);
- // right.attach(5);
- pinMode(12,OUTPUT);
- pinMode(4,OUTPUT);
-pinMode(thrusterrelay,OUTPUT);
-pinMode(thrusterrelay1,OUTPUT);
-/*pinMode(frontrelay,OUTPUT);
-pinMode(backrelay,OUTPUT);
-pinMode(leftrelay,OUTPUT);
-pinMode(rightrelay,OUTPUT);
-pinMode(13,OUTPUT);*/
+   
+   //pinMode(nano_relay,OUTPUT);
+   pinMode(motherboard_on,OUTPUT);
 
-//pinMode(obcrelay,OUTPUT);
+   pinMode(thrusterrelay_1,OUTPUT);
+   pinMode(thrusterrelay_2,OUTPUT);
 
-sensor.reset();
-sensor.begin();
+   sensor.reset();
+   sensor.begin();
     
-nh.subscribe(fpssub);
-nh.subscribe(bpssub);
-nh.subscribe(lssub);
-nh.subscribe(rssub);
-nh.subscribe(tstate);
-//nh.subscribe(threv);
-nh.advertise(pub_depth);
-//nh.advertise(b_l_1);
-//nh.advertise(b_l_2);
+   nh.subscribe(fpssub);
+   nh.subscribe(bpssub);
+   nh.subscribe(lssub);
+   nh.subscribe(rssub);
+   nh.subscribe(tstate);
+   nh.advertise(pub_depth);
+   pressure_baseline = sensor.getPressure(ADC_4096);
+   
+   delay(1000);
 
- pressure_baseline = sensor.getPressure(ADC_4096);
- 
-//nh.subscribe(mstate);
-digitalWrite(thrusterrelay,LOW);
-/*digitalWrite(frontrelay,LOW);
-digitalWrite(backrelay,LOW);
-digitalWrite(leftrelay,LOW);
-digitalWrite(rightrelay,LOW);*/
-//digitalWrite(obcrelay,HIGH);
-digitalWrite(12,HIGH);
-digitalWrite(4,HIGH);
-delay(1000);
-digitalWrite(4,LOW);
+
+  digitalWrite(thrusterrelay_1,LOW);
+  digitalWrite(thrusterrelay_2,LOW);
+
+//  digitalWrite(nano_relay,HIGH);
+  
+  
+  digitalWrite(motherboard_on,HIGH);
+  //delay(1000);
+ // digitalWrite(motherboard_on,LOW);
 }
 
 void loop()
 {  
-  
-  /* array[0] = analogRead(A3);
-   array[1] = analogRead(A6);
-   arrray[2] = analogRead(A7);*/
-  
- // c1_msg.data= a;
-  //c1_msg.data= b;
-  //c1_msg.data= c;
-  
   pressure_abs = sensor.getPressure(ADC_4096);
- 
   depth_msg.data = pressure_abs;
-
- pub_depth.publish(&depth_msg);
- // b_l_1.publish(&depth_msg);
-   // b_l_2.publish(&c2_msg);
-     // b_l_3.publish(&c3_msg);
+  pub_depth.publish(&depth_msg);
   nh.spinOnce();
   delay(1);
 }

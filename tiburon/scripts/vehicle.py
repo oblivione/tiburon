@@ -2,14 +2,14 @@
 
 class VehicleParams():
     def __init__(self):
-        self.B = 16 # Buoyancy force
+        self.B = 16+0.5 # Buoyancy force
         self.weight = 16*0.9
         # 1- forward. 2-backward, 3-left, 4-right
         self.x1 = 0.30
         self.x2 = 0.20
         self.x3 = 0.25
         self.x4 = 0.25
-        self.xB = 0.0
+        self.xB = 0.00
 
         self.thrusterMax = 2.72 #in kgf
         self.thrusterMin = 0.45 #in kgf

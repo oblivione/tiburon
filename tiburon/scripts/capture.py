@@ -4,7 +4,20 @@ import sys
 import rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
+from std_msgs.msg import Float64
+from tiburon.msg import ins_data
 import datetime
+
+depthVal = pitchVal = yawVal = 0.0
+
+def depthCallback(msg):
+    global depthVal
+    depthVal = msg.data
+
+def yawAndPitchCallback(msg):
+    global pitchVal,yawVal
+    pitchVal = msg.YPR.y
+    yawVal = msg.YPR.x
 
 def main():
     if len(sys.argv)<2:
@@ -24,6 +37,8 @@ def main():
     pub1 = rospy.Publisher('auv_cam1',Image,queue_size=1)
     pub2 = rospy.Publisher('auv_cam2',Image,queue_size=1)
     pub3 = rospy.Publisher('auv_cam3',Image,queue_size=1)
+    depthDataSub = rospy.Subscriber('/depth_value',Float64,depthCallback)
+    yawAndPitchSub = rospy.Subscriber('/tiburon/ins_data',ins_data,yawAndPitchCallback)
     fourcc1 = fourcc2 = fourcc3 = cv2.cv.CV_FOURCC(*'MJPG')
     out1 = cv2.VideoWriter('1_AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',fourcc1,30.0,(640,480))
     out2 = cv2.VideoWriter('2_AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',fourcc2,30.0,(640,480))
@@ -34,6 +49,7 @@ def main():
     img1 = None
     img2 = None
     img3 = None
+    font = cv2.FONT_HERSHEY_SIMPLEX
     while not rospy.is_shutdown():
         try:
             ret1=ret2=ret3=False
@@ -44,14 +60,23 @@ def main():
             if(count>=3):
                 ret3, readFrame3 = capture3.read()
             if(ret1==True):
-		out1.write(readFrame1)
+                cv2.putText(readFrame1,'D: '+str(depthVal),(10,50), font, 0.7,(0,255,255),2)
+                cv2.putText(readFrame1,'P: '+str(pitchVal),(10,70), font, 0.7,(0,255,255),2)
+                cv2.putText(readFrame1,'Y: '+str(yawVal),(10,90), font, 0.7,(0,255,255),2)
+                out1.write(readFrame1)
                 img1 = bridge.cv2_to_imgmsg(readFrame1, "bgr8")
                 pub1.publish(img1)
             if(ret2==True):
-		out2.write(readFrame2)
+                cv2.putText(readFrame1,'D: '+str(depthVal),(10,50), font, 0.7,(0,255,255),2)
+                cv2.putText(readFrame1,'P: '+str(pitchVal),(10,70), font, 0.7,(0,255,255),2)
+                cv2.putText(readFrame1,'Y: '+str(yawVal),(10,90), font, 0.7,(0,255,255),2)
+                out2.write(readFrame2)
                 img2 = bridge.cv2_to_imgmsg(readFrame2, "bgr8")
                 pub2.publish(img2)
             if(ret3==True):
+                cv2.putText(readFrame1,'D: '+str(depthVal),(10,50), font, 0.7,(0,255,255),2)
+                cv2.putText(readFrame1,'P: '+str(pitchVal),(10,70), font, 0.7,(0,255,255),2)
+                cv2.putText(readFrame1,'Y: '+str(yawVal),(10,90), font, 0.7,(0,255,255),2)
                 out3.write(readFrame3)
                 img3 = bridge.cv2_to_imgmsg(readFrame3, "bgr8")
                 pub3.publish(img3)

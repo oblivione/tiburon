@@ -9,7 +9,7 @@ class VehicleParams():
         self.x2 = 0.20
         self.x3 = 0.25
         self.x4 = 0.25
-        self.xB = 0.05
+        self.xB = 0.0
 
         self.thrusterMax = 2.72 #in kgf
         self.thrusterMin = 0.45 #in kgf

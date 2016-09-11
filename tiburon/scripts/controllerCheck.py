@@ -2,6 +2,7 @@
 from controllerCheckUI import Ui_MainWindow
 from PyQt4 import QtGui,QtCore
 from std_msgs.msg import Float64
+from geometry_msgs.msg import Vector3
 from tiburon.msg import ins_data
 import rospy
 import signal
@@ -34,8 +35,16 @@ class valueSetter(QtGui.QMainWindow):
         self.ui.yawSlider.valueChanged.connect(self.pitchAndYawPublish)
         self.ui.yawLabel.setText('Y: '+str(self.ui.yawSlider.value()))
 
+        self.ui.velSlider.setMinimum(-1500)
+        self.ui.velSlider.setMaximum(1500)
+        self.ui.velSlider.setValue(0)
+        self.ui.velSlider.setTickInterval(1)
+        self.ui.velSlider.valueChanged.connect(self.velPublish)
+        self.ui.velLabel.setText('V: '+str(self.ui.velSlider.value()))
+
         self.depthPublisher = rospy.Publisher('/depth_value',Float64,queue_size=1)
         self.pitchAndYawPublisher = rospy.Publisher('tiburon/ins_data',ins_data,queue_size=1)
+        self.velPublisher = rospy.Publisher('/tiburon/Delta_velocity',Vector3,queue_size=1)
 
 
     def depthPublish(self):
@@ -51,6 +60,12 @@ class valueSetter(QtGui.QMainWindow):
         self.pitchAndYawPublisher.publish(self.msg)
         self.ui.pitchLabel.setText('P: '+str(self.ui.pitchSlider.value()))
         self.ui.yawLabel.setText('Y: '+str(self.ui.yawSlider.value()))
+
+    def velPublish(self):
+        self.msg = Vector3()
+        self.msg.x = self.ui.velSlider.value()/100
+        self.velPublisher.publish(self.msg)
+        self.ui.velLabel.setText('V: '+str(self.ui.velSlider.value()))
 
 def main():
     rospy.init_node("controllerCheck")

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 import rospy
 from std_msgs.msg import String,UInt16,Float32,Float64
-from tiburon.msg import ins_data, delta_velocity_data
+from tiburon.msg import ins_data
+from geometry_msgs.msg import Vector3
 from dynamic_reconfigure.server import Server
 from tiburon.cfg import yawPitchDepthConfig
 import datetime,time
@@ -12,13 +13,17 @@ from AngularPID import AngularPID
 from vehicle import VehicleParams
 
 depthController = PID()
+forwardController = PID()
 pitchController = AngularPID()
 yawController  = AngularPID()
 
 depthReceived = 0
 pitchAndYawReceived = 0
-
-# def velCallback(msg):
+velRecieved = 0
+def velCallback(msg):
+    global forwardController, velRecieved
+    forwardController.currentVal = msg.x
+    velRecieved = 1
 
 
 def depthCallback(msg):
@@ -59,6 +64,11 @@ def callback(config,level):
         yawController.Ki = config.ki_yaw/1000.0
         yawController.Kd = config.kd_yaw
         yawController.IError = 0.00
+    if forwardController.Kp != config.kp_for or forwardController.Ki != config.ki_for or forwardController.Kd !=config.kd_for:
+        forwardController.Kp = config.kp_for/50.0
+        forwardController.Ki = config.ki_for/1000.0
+        forwardController.Kd = config.kd_for
+        forwardController.IError = 0.00
 
     depthController.checkpoint = config.setpoint_depth
     pitchController.checkpoint = config.setpoint_pitch
@@ -69,7 +79,7 @@ def callback(config,level):
 
 depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback)
 insDataSub=rospy.Subscriber("/tiburon/ins_data",ins_data,insCallback)
-# deltaVelSub=rospy.Subscriber("/tiburon/Delta_velocity",,velCallback)
+deltaVelSub=rospy.Subscriber("/tiburon/Delta_velocity",Vector3,velCallback)
 frontPitchPub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
 backPitchPub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
 sideLeftSpeedPub=rospy.Publisher("/sideleftspeed",UInt16,queue_size=1)
@@ -88,13 +98,13 @@ def main():
     thruster1 = thruster2 = thruster3 = thruster4 = 0.0
     while not rospy.is_shutdown():
         # If either value is still not Received, do nothing
-        if depthReceived==0 or pitchAndYawReceived==0:
+        if depthReceived==0 or pitchAndYawReceived==0 or velRecieved == 0:
             continue
         # Get the PID control signal for all
         depthU = depthController.getError()
         pitchU = pitchController.getError()
         yawU = yawController.getError()
-        forwardU = 0
+        forwardU = forwardController.getError()
         targetFrontSpeed = targetBackSpeed = targetLeftSpeed = targetRightSpeed = 1500
         '''
         Bottom w.r.t. to bot is positive z
@@ -122,7 +132,7 @@ def main():
         _sin = math.sin(pitchController.currentVal/180 * math.pi)
         _cos = math.cos(pitchController.currentVal/180 * math.pi)
         A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [vp.x1, -vp.x2, 0, 0], [0, 0, vp.x3, -vp.x4]])
-        b = np.array([depthU+ vp.B - vp.weight, 0, pitchU + vp.B * vp.xB, yawU + vp.J*thruster1 + vp.J*thruster2])
+        b = np.array([depthU+ vp.B - vp.weight, forwardU, pitchU + vp.B * vp.xB, yawU + vp.J*thruster1 + vp.J*thruster2])
         print A
         print b
         F1,F2,F3,F4 = np.linalg.solve(A,b)

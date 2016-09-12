@@ -26,11 +26,14 @@ class auvthrusterpanel(QtGui.QMainWindow):
         self.siderightspeedpub=rospy.Publisher("siderightspeed",UInt16,queue_size=1)
         self.motherboardstatepub=rospy.Publisher("motherboardstate",UInt16,queue_size=1)
         self.thrusterreversepub=rospy.Publisher("thrusterreverse",UInt16,queue_size=1)
+        self.sensorState = rospy.Publisher("depthSensorState",UInt16,queue_size=1)
         self.errorsubscribe=rospy.Subscriber("errorboard",String,self.errorcallback)
     def connections(self):
         self.ui.ThrustersInitialize.clicked.connect(self.thrustersinitialize)
         self.ui.ThrustersOn.clicked.connect(self.thrusterson)
         self.ui.Thrustersoff.clicked.connect(self.thrustersoff)
+        self.ui.depthSensorOn.clicked.connect(self.sensorOn)
+        self.ui.depthSensorOff.clicked.connect(self.sensorOff)
         self.ui.poweroffOBC.clicked.connect(self.poweroffOBC)
         self.ui.OBCon.clicked.connect(self.OBCon)
         self.ui.rfront_pitch.clicked.connect(self.frontpitchrev)
@@ -110,6 +113,10 @@ class auvthrusterpanel(QtGui.QMainWindow):
         if self.ui.checkBox.isChecked():
             self.sideleftspeedpub.publish(self.ui.side_right_slider.value())
             self.ui.side_left_val.setText(str(self.ui.side_right_slider.value()))
+    def sensorOn(self):
+        self.sensorState.pub(1)
+    def sensorOff(self):
+        self.sensorState.pub(0)
 
 def main():
     rospy.init_node("thrustercontrolpanel")

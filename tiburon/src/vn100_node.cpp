@@ -262,7 +262,7 @@ int main(int argc,char** argv)
 	std::string port;
 	int baudrate,publish_rate,async_output_rate,async_output_type;
 	std::string enable,headingMode,filteringMode,tuningMode;
-	np.param<std::string>("serial_port",port,"/dev/ttyUSB0");
+	np.param<std::string>("serial_port",port,"/dev/auv_vn100");
 	np.param<int>("serial_baud",baudrate,115200);
 	np.param<int>("publish_rate",publish_rate,60);
 	np.param<int>("async_output_type",async_output_type,0);

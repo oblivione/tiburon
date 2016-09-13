@@ -11,6 +11,7 @@ $ sudo nano /etc/udev/rules.d/10-tiburonRules.rules
 The files are executed in lexicographical order. So ensure that your
 rule starts with the proper name
 ATTRS{idVendor}=="0403",ATTRS{idProduct}=="6001",SYMLINK+="auv_vn100"
+## ATTRS{idVendor}=="1a86",ATTRS{idProduct}=="7523",SYMLINK+="auv_nano"
 Only attributes within one device section may be used together in one
 rule, to match the device for which the link will be created
 $ sudo service udev restart

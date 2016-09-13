@@ -114,9 +114,9 @@ class auvthrusterpanel(QtGui.QMainWindow):
             self.sideleftspeedpub.publish(self.ui.side_right_slider.value())
             self.ui.side_left_val.setText(str(self.ui.side_right_slider.value()))
     def sensorOn(self):
-        self.sensorState.pub(1)
+        self.sensorState.publish(1)
     def sensorOff(self):
-        self.sensorState.pub(0)
+        self.sensorState.publish(0)
 
 def main():
     rospy.init_node("thrustercontrolpanel")

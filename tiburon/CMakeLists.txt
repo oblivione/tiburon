@@ -150,8 +150,8 @@ add_executable(velocity_node src/true_vel.cpp)
 target_link_libraries(velocity_node ${catkin_LIBRARIES})
 
 
-add_executable(rviz src/pub_rviz.cpp)
-target_link_libraries(rviz ${catkin_LIBRARIES})
+#add_executable(rviz src/pub_rviz.cpp)
+#target_link_libraries(rviz ${catkin_LIBRARIES})
 
 add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 

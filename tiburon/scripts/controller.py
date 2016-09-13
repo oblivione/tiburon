@@ -22,8 +22,12 @@ pitchAndYawReceived = 0
 velRecieved = 0
 def velCallback(msg):
     global forwardController, velRecieved
-    forwardController.currentVal = msg.x
-    velRecieved = 1
+    if pitchAndYawReceived:
+        velx = msg.x
+        velz = msg.z
+        curPitch = pitchController.currentVal
+        forwardController.currentVal = velx*cos(curPitch*math.pi/180) - velz*sin(curPitch*math.pi/180)
+        velRecieved = 1
 
 
 def depthCallback(msg):

@@ -31,3 +31,12 @@ $ ssh-copy-id auv-nitr@192.168.61.154
 $ ssh-add
 Try connecting. Should work.
 
+5. Shutdown by ATX
+sudo -H gedit /etc/acpi/events/powerbtn
+Add # to comment line:
+#action=/etc/acpi/powerbtn.sh
+Add a new line:
+action=/sbin/poweroff
+Save file. Open a console and type:
+sudo acpid restart
+

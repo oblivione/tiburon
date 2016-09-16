@@ -20,13 +20,21 @@ ros::NodeHandle  nh;
 
 MS5803 sensor(ADDRESS_HIGH);
 int i=0,j=0,k=0,l=0,ledState = 1;
-unsigned long prev,current;
+unsigned long prev,current,prevCallbackTime;
+bool connected = 0;
 float temperature_c, temperature_f;
 double pressure_abs, pressure_relative, altitude_delta, pressure_baseline;
 float array[4];
 double base_altitude = 1655.0;
 
 int depthSensorOn = 0, prevDepthSensorOn = 0;
+
+
+void checkConnectionCallback(const std_msgs::UInt16& msg)
+{
+  connected = 1;
+  prevCallbackTime = millis();
+}
 
 void depthSensorCallback(const std_msgs::UInt16& msg)
 {
@@ -58,7 +66,8 @@ void tsCb(const std_msgs::UInt16& msg)
 std_msgs::Float64 depth_msg;
 ros::Subscriber<std_msgs::UInt16> tstate("thrusterstate",&tsCb);
 ros::Publisher  pub_depth("/depth_value",&depth_msg);
-ros::Subscriber<std_msgs::UInt16> depthSensor("depthSensorState",&depthSensorCallback );
+ros::Subscriber<std_msgs::UInt16> depthSensor("/depthSensorState",&depthSensorCallback );
+ros::Subscriber<std_msgs::UInt16> connectionChecker("/tiburonConnection",&checkConnectionCallback );
 
 void setup()
 {
@@ -105,8 +114,12 @@ void loop()
   {
     sensor.reset();
   }
+  if(connected && millis()-prevCallbackTime>5000)
+  {
+    connected = 0;
+    digitalWrite(thrusterrelay_1,LOW);
+    digitalWrite(thrusterrelay_2,LOW);
+  }
   nh.spinOnce();
   delay(1);
 }
-
-

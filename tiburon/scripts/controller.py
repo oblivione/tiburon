@@ -120,14 +120,14 @@ def main():
         Equations of motion are:-
           F1 cos t + F2 cos t + F3 sin t + F4 sin t = ma + B - mg    = U1 + B - mg
         - F1 sin t - F2 sin t + F3 cos t + F4 cos t = 0              = U2
-          F1 x1    - F2 x2                          = Ixx Axx - B xB = U3 + B xB
+        - F1 x1    + F2 x2                          = Ixx Axx - B xB = U3 - B xB
                                 F3 x3    - F4 x4    = Izz Azz        = U4 + Jw1 + Jw2
 
         Matrix form
          ==                                  ==   ==    ==         ==            ==
         |   cos t    cos t    sin t    sin t   | |   F1   |       |   U1 + B - mg  |
         |  -sin t   -sin t    cos t    cos t   | |   F2   |  ===  |       00       |
-        |    x1      -x2       00       00     | |   F3   |  ===  |   U3 + B xB    |
+        |   -x1       x2       00       00     | |   F3   |  ===  |   U3 - B xB    |
         |    00       00       x3      -x4     | |   F4   |       | U4 + Jw1 + Jw2 |
          ==                                  ==   ==    ==         ==            ==
 
@@ -135,7 +135,7 @@ def main():
 
         _sin = math.sin(pitchController.currentVal/180 * math.pi)
         _cos = math.cos(pitchController.currentVal/180 * math.pi)
-        A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [vp.x1, -vp.x2, 0, 0], [0, 0, vp.x3, -vp.x4]])
+        A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [-vp.x1, vp.x2, 0, 0], [0, 0, vp.x3, -vp.x4]])
         b = np.array([depthU+ vp.B - vp.weight, forwardU, pitchU + vp.B * vp.xB, yawU + vp.J*thruster1 + vp.J*thruster2])
         print A
         print b

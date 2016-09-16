@@ -21,7 +21,7 @@ ros::NodeHandle  nh;
 MS5803 sensor(ADDRESS_HIGH);
 int i=0,j=0,k=0,l=0,ledState = 1;
 unsigned long prev,current,prevCallbackTime;
-bool connected = 0;
+bool connectedTiburon = 0;
 float temperature_c, temperature_f;
 double pressure_abs, pressure_relative, altitude_delta, pressure_baseline;
 float array[4];
@@ -32,7 +32,7 @@ int depthSensorOn = 0, prevDepthSensorOn = 0;
 
 void checkConnectionCallback(const std_msgs::UInt16& msg)
 {
-  connected = 1;
+  connectedTiburon = 1;
   prevCallbackTime = millis();
 }
 
@@ -82,6 +82,7 @@ void setup()
   nh.subscribe(depthSensor);
   nh.subscribe(tstate);
   nh.advertise(pub_depth);
+  nh.subscribe(connectionChecker);
   // pressure_baseline = sensor.getPressure(ADC_4096);
   digitalWrite(thrusterrelay_1,LOW);
   digitalWrite(thrusterrelay_2,LOW);
@@ -114,9 +115,9 @@ void loop()
   {
     sensor.reset();
   }
-  if(connected && millis()-prevCallbackTime>5000)
+  if(connectedTiburon && millis()-prevCallbackTime>5000)
   {
-    connected = 0;
+    connectedTiburon = 0;
     digitalWrite(thrusterrelay_1,LOW);
     digitalWrite(thrusterrelay_2,LOW);
   }

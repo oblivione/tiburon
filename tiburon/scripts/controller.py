@@ -20,13 +20,15 @@ yawController  = AngularPID()
 depthReceived = 0
 pitchAndYawReceived = 0
 velRecieved = 0
+desiredAcceleration = 0.1
+
 def velCallback(msg):
     global forwardController, velRecieved
     if pitchAndYawReceived:
         velx = msg.x
         velz = msg.z
         curPitch = pitchController.currentVal
-        forwardController.currentVal = velx*cos(curPitch*math.pi/180) - velz*sin(curPitch*math.pi/180)
+        forwardController.currentVal = velx*math.cos(curPitch*math.pi/180) - velz*math.sin(curPitch*math.pi/180)
         velRecieved = 1
 
 
@@ -77,13 +79,14 @@ def callback(config,level):
     depthController.checkpoint = config.setpoint_depth
     pitchController.checkpoint = config.setpoint_pitch
     yawController.checkpoint = config.setpoint_yaw
+    desiredAcceleration = config.desAccl
     print "Act Kp: ",config.kp_pitch
     print "D: ",depthController.checkpoint,"Y: ",yawController.checkpoint,"P: ",pitchController.checkpoint
     return config
 
 depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback)
 insDataSub=rospy.Subscriber("/tiburon/ins_data",ins_data,insCallback)
-deltaVelSub=rospy.Subscriber("/tiburon/Delta_velocity",Vector3,velCallback)
+deltaVelSub=rospy.Subscriber("/tiburon/true_velocity",Vector3,velCallback)
 frontPitchPub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
 backPitchPub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
 sideLeftSpeedPub=rospy.Publisher("/sideleftspeed",UInt16,queue_size=1)
@@ -183,40 +186,40 @@ def main():
             targetRightSpeed = 1100
 
         if(targetFrontSpeed>=1500 and 1500+thruster1<=targetFrontSpeed):
-		    thruster1 = thruster1+0.1
+		    thruster1 = thruster1+desiredAcceleration
         elif(targetFrontSpeed>=1500 and 1500+thruster1>targetFrontSpeed):
-		    thruster1 = thruster1 - 0.1
+		    thruster1 = thruster1 - desiredAcceleration
         if(targetFrontSpeed<=1500 and 1500+thruster1<targetFrontSpeed):
-		    thruster1 = thruster1+0.1
+		    thruster1 = thruster1+desiredAcceleration
         elif(targetFrontSpeed<=1500 and 1500+thruster1>=targetFrontSpeed):
-		    thruster1 = thruster1 - 0.1
+		    thruster1 = thruster1 - desiredAcceleration
 
         if(targetBackSpeed>=1500 and 1500+thruster2<=targetBackSpeed):
-		    thruster2 = thruster2+0.1
+		    thruster2 = thruster2+desiredAcceleration
         elif(targetBackSpeed>=1500 and 1500+thruster2>targetBackSpeed):
-		    thruster2 = thruster2 - 0.1
+		    thruster2 = thruster2 -desiredAcceleration
         if(targetBackSpeed<=1500 and 1500+thruster2<targetBackSpeed):
-		    thruster2 = thruster2+0.1
+		    thruster2 = thruster2+desiredAcceleration
         elif(targetBackSpeed<=1500 and 1500+thruster2>=targetBackSpeed):
-		    thruster2 = thruster2 - 0.1
+		    thruster2 = thruster2 - desiredAcceleration
 
         if(targetLeftSpeed>=1500 and 1500+thruster3<=targetLeftSpeed):
-		    thruster3 = thruster3+0.1
+		    thruster3 = thruster3+desiredAcceleration
         elif(targetLeftSpeed>=1500 and 1500+thruster3>targetLeftSpeed):
-		    thruster3 = thruster3 - 0.1
+		    thruster3 = thruster3 - desiredAcceleration
         if(targetLeftSpeed<=1500 and 1500+thruster3<targetLeftSpeed):
-		    thruster3 = thruster3+0.1
+		    thruster3 = thruster3+desiredAcceleration
         elif(targetLeftSpeed<=1500 and 1500+thruster3>=targetLeftSpeed):
-		    thruster3 = thruster3 - 0.1
+		    thruster3 = thruster3 - desiredAcceleration
 
         if(targetRightSpeed>=1500 and 1500+thruster4<=targetRightSpeed):
-		    thruster4 = thruster4+0.1
+		    thruster4 = thruster4+desiredAcceleration
         elif(targetRightSpeed>=1500 and 1500+thruster4>targetRightSpeed):
-		    thruster4 = thruster4 - 0.1
+		    thruster4 = thruster4 - desiredAcceleration
         if(targetRightSpeed<=1500 and 1500+thruster4<targetRightSpeed):
-		    thruster4 = thruster4+0.1
+		    thruster4 = thruster4+desiredAcceleration
         elif(targetRightSpeed<=1500 and 1500+thruster4>=targetRightSpeed):
-		    thruster4 = thruster4 - 0.1
+		    thruster4 = thruster4 - desiredAcceleration
 
     	print "TForward:",targetFrontSpeed,"TBack:",targetBackSpeed,"TLeft:",targetLeftSpeed,"TRight:",targetRightSpeed
         print "Forward:",1500+thruster1,"Back:",1500+thruster2,"Left:",1500+thruster3,"Right:",1500+thruster4

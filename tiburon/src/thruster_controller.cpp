@@ -31,12 +31,12 @@ void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
             default:
                 printf("Incorrect!\n");
         }
-	std::ofstream configFile("/home/auv-nitr/Documents/Tiburon/config.txt");
-        configFile << reverseThruster1;
-        configFile << reverseThruster2;
-        configFile << reverseThruster3;
-        configFile << reverseThruster4;
-        configFile.close();
+	// std::ofstream configFile("/home/auv-nitr/Documents/Tiburon/config.txt");
+  //       configFile << reverseThruster1;
+  //       configFile << reverseThruster2;
+  //       configFile << reverseThruster3;
+  //       configFile << reverseThruster4;
+  //       configFile.close();
 }
 
 void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
@@ -84,19 +84,19 @@ void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
     }
 }
 
-void readFile()
-{
-    std::ifstream configFile("/home/auv-nitr/Documents/Tiburon/config.txt");
-    configFile >> reverseThruster1;
-    configFile >> reverseThruster2;
-    configFile >> reverseThruster3;
-    configFile >> reverseThruster4;
-    configFile.close();
-}
+// void readFile()
+// {
+//     std::ifstream configFile("/home/auv-nitr/Documents/Tiburon/config.txt");
+//     configFile >> reverseThruster1;
+//     configFile >> reverseThruster2;
+//     configFile >> reverseThruster3;
+//     configFile >> reverseThruster4;
+//     configFile.close();
+// }
 
 int main(int argc, char* argv[])
 {
-    readFile();
+    // readFile();
     ros::init(argc,argv,"thruster_controller");
     ros::NodeHandle n;
     ros::Subscriber frontsub = n.subscribe("frontpitchspeed",1,frontcallback);

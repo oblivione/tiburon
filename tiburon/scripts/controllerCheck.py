@@ -44,7 +44,7 @@ class valueSetter(QtGui.QMainWindow):
 
         self.depthPublisher = rospy.Publisher('/depth_value',Float64,queue_size=1)
         self.pitchAndYawPublisher = rospy.Publisher('tiburon/ins_data',ins_data,queue_size=1)
-        self.velPublisher = rospy.Publisher('/tiburon/Delta_velocity',Vector3,queue_size=1)
+        self.velPublisher = rospy.Publisher('/tiburon/true_velocity',Vector3,queue_size=1)
 
 
     def depthPublish(self):

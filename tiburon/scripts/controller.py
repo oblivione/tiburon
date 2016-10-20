@@ -55,25 +55,25 @@ def insCallback(msg):
 
 def callback(config,level):
     global depthController, pitchController, yawController
-    if depthController.Kp != config.kp_depth or depthController.Ki != config.ki_depth or depthController.Kd !=config.kd_depth:
-        depthController.Kp = config.kp_depth/400.0
+    depthController.Kp = config.kp_depth/400.0
+    depthController.Kd = config.kd_depth
+    pitchController.Kp = config.kp_pitch/30.0
+    pitchController.Kd = config.ki_pitch
+    yawController.Kp = config.kp_yaw/25.0
+    yawController.Kd = config.kd_yaw
+    yawController.Kp = config.kp_yaw/50.0
+    yawController.Kd = config.kd_yaw    
+    if depthController.Ki != config.ki_depth:
         depthController.Ki = config.ki_depth/1000.0
-        depthController.Kd = config.kd_depth
         depthController.IError = 0.00
-    if pitchController.Kp != config.kp_pitch or pitchController.Ki != config.ki_pitch or pitchController.Kd !=config.kd_pitch:
-        pitchController.Kp = config.kp_pitch/30.0
+    if pitchController.Ki != config.ki_pitch:
         pitchController.Ki = config.ki_pitch/1000.0
-        pitchController.Kd = config.ki_pitch
         pitchController.IError = 0.00
-    if yawController.Kp != config.kp_yaw or yawController.Ki != config.ki_yaw or yawController.Kd !=config.kd_yaw:
-        yawController.Kp = config.kp_yaw/50.0
+    if yawController.Ki != config.ki_yaw:
         yawController.Ki = config.ki_yaw/1000.0
-        yawController.Kd = config.kd_yaw
         yawController.IError = 0.00
-    if forwardController.Kp != config.kp_for or forwardController.Ki != config.ki_for or forwardController.Kd !=config.kd_for:
-        forwardController.Kp = config.kp_for/50.0
+    if forwardController.Ki != config.ki_for:
         forwardController.Ki = config.ki_for/1000.0
-        forwardController.Kd = config.kd_for
         forwardController.IError = 0.00
 
     depthController.checkpoint = config.setpoint_depth

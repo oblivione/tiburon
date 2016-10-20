@@ -63,7 +63,7 @@ sensor_msgs
    ins_data.msg
    auvcontrol.msg
    delta_velocity_data.msg
-
+   pid.msg
  )
 
 ## Generate services in the 'srv' folder

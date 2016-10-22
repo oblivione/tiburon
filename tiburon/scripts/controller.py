@@ -185,49 +185,53 @@ def main():
         elif(targetRightSpeed<1100):
             targetRightSpeed = 1100
 
-        if(targetFrontSpeed>=1500 and 1500+thruster1<=targetFrontSpeed):
-		    thruster1 = thruster1+desiredAcceleration
-        elif(targetFrontSpeed>=1500 and 1500+thruster1>targetFrontSpeed):
-		    thruster1 = thruster1 - desiredAcceleration
-        if(targetFrontSpeed<=1500 and 1500+thruster1<targetFrontSpeed):
-		    thruster1 = thruster1+desiredAcceleration
-        elif(targetFrontSpeed<=1500 and 1500+thruster1>=targetFrontSpeed):
-		    thruster1 = thruster1 - desiredAcceleration
-
-        if(targetBackSpeed>=1500 and 1500+thruster2<=targetBackSpeed):
-		    thruster2 = thruster2+desiredAcceleration
-        elif(targetBackSpeed>=1500 and 1500+thruster2>targetBackSpeed):
-		    thruster2 = thruster2 -desiredAcceleration
-        if(targetBackSpeed<=1500 and 1500+thruster2<targetBackSpeed):
-		    thruster2 = thruster2+desiredAcceleration
-        elif(targetBackSpeed<=1500 and 1500+thruster2>=targetBackSpeed):
-		    thruster2 = thruster2 - desiredAcceleration
-
-        if(targetLeftSpeed>=1500 and 1500+thruster3<=targetLeftSpeed):
-		    thruster3 = thruster3+desiredAcceleration
-        elif(targetLeftSpeed>=1500 and 1500+thruster3>targetLeftSpeed):
-		    thruster3 = thruster3 - desiredAcceleration
-        if(targetLeftSpeed<=1500 and 1500+thruster3<targetLeftSpeed):
-		    thruster3 = thruster3+desiredAcceleration
-        elif(targetLeftSpeed<=1500 and 1500+thruster3>=targetLeftSpeed):
-		    thruster3 = thruster3 - desiredAcceleration
-
-        if(targetRightSpeed>=1500 and 1500+thruster4<=targetRightSpeed):
-		    thruster4 = thruster4+desiredAcceleration
-        elif(targetRightSpeed>=1500 and 1500+thruster4>targetRightSpeed):
-		    thruster4 = thruster4 - desiredAcceleration
-        if(targetRightSpeed<=1500 and 1500+thruster4<targetRightSpeed):
-		    thruster4 = thruster4+desiredAcceleration
-        elif(targetRightSpeed<=1500 and 1500+thruster4>=targetRightSpeed):
-		    thruster4 = thruster4 - desiredAcceleration
+        # if(targetFrontSpeed>=1500 and 1500+thruster1<=targetFrontSpeed):
+		#     thruster1 = thruster1+desiredAcceleration
+        # elif(targetFrontSpeed>=1500 and 1500+thruster1>targetFrontSpeed):
+		#     thruster1 = thruster1 - desiredAcceleration
+        # if(targetFrontSpeed<=1500 and 1500+thruster1<targetFrontSpeed):
+		#     thruster1 = thruster1+desiredAcceleration
+        # elif(targetFrontSpeed<=1500 and 1500+thruster1>=targetFrontSpeed):
+		#     thruster1 = thruster1 - desiredAcceleration
+        #
+        # if(targetBackSpeed>=1500 and 1500+thruster2<=targetBackSpeed):
+		#     thruster2 = thruster2+desiredAcceleration
+        # elif(targetBackSpeed>=1500 and 1500+thruster2>targetBackSpeed):
+		#     thruster2 = thruster2 -desiredAcceleration
+        # if(targetBackSpeed<=1500 and 1500+thruster2<targetBackSpeed):
+		#     thruster2 = thruster2+desiredAcceleration
+        # elif(targetBackSpeed<=1500 and 1500+thruster2>=targetBackSpeed):
+		#     thruster2 = thruster2 - desiredAcceleration
+        #
+        # if(targetLeftSpeed>=1500 and 1500+thruster3<=targetLeftSpeed):
+		#     thruster3 = thruster3+desiredAcceleration
+        # elif(targetLeftSpeed>=1500 and 1500+thruster3>targetLeftSpeed):
+		#     thruster3 = thruster3 - desiredAcceleration
+        # if(targetLeftSpeed<=1500 and 1500+thruster3<targetLeftSpeed):
+		#     thruster3 = thruster3+desiredAcceleration
+        # elif(targetLeftSpeed<=1500 and 1500+thruster3>=targetLeftSpeed):
+		#     thruster3 = thruster3 - desiredAcceleration
+        #
+        # if(targetRightSpeed>=1500 and 1500+thruster4<=targetRightSpeed):
+		#     thruster4 = thruster4+desiredAcceleration
+        # elif(targetRightSpeed>=1500 and 1500+thruster4>targetRightSpeed):
+		#     thruster4 = thruster4 - desiredAcceleration
+        # if(targetRightSpeed<=1500 and 1500+thruster4<targetRightSpeed):
+		#     thruster4 = thruster4+desiredAcceleration
+        # elif(targetRightSpeed<=1500 and 1500+thruster4>=targetRightSpeed):
+		#     thruster4 = thruster4 - desiredAcceleration
 
     	print "TForward:",targetFrontSpeed,"TBack:",targetBackSpeed,"TLeft:",targetLeftSpeed,"TRight:",targetRightSpeed
-        print "Forward:",1500+thruster1,"Back:",1500+thruster2,"Left:",1500+thruster3,"Right:",1500+thruster4
-
-        frontPitchPub.publish(1500+thruster1)
-        backPitchPub.publish(1500+thruster2)
-        sideLeftSpeedPub.publish(1500+thruster3)
-        sideRightSpeedPub.publish(1500+thruster4)
+        # print "Forward:",1500+thruster1,"Back:",1500+thruster2,"Left:",1500+thruster3,"Right:",1500+thruster4
+        #
+        # frontPitchPub.publish(1500+thruster1)
+        # backPitchPub.publish(1500+thruster2)
+        # sideLeftSpeedPub.publish(1500+thruster3)
+        # sideRightSpeedPub.publish(1500+thruster4)
+        frontPitchPub.publish(targetFrontSpeed)
+        backPitchPub.publish(targetBackSpeed)
+        sideLeftSpeedPub.publish(targetLeftSpeed)
+        sideRightSpeedPub.publish(targetRightSpeed)
         rate.sleep()
 
 

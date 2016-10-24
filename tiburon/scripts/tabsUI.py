@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Tue Oct 18 18:47:49 2016
+# Created: Sat Oct 22 12:35:07 2016
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -64,19 +64,19 @@ class Ui_MainWindow(object):
         self.forward_radioButton.setObjectName(_fromUtf8("forward_radioButton"))
         self.kp_lineEdit = QtGui.QLineEdit(self.tab)
         self.kp_lineEdit.setGeometry(QtCore.QRect(480, 120, 41, 31))
-        self.kp_lineEdit.setReadOnly(True)
+        self.kp_lineEdit.setReadOnly(False)
         self.kp_lineEdit.setObjectName(_fromUtf8("kp_lineEdit"))
         self.ki_lineEdit = QtGui.QLineEdit(self.tab)
         self.ki_lineEdit.setGeometry(QtCore.QRect(480, 160, 41, 31))
-        self.ki_lineEdit.setReadOnly(True)
+        self.ki_lineEdit.setReadOnly(False)
         self.ki_lineEdit.setObjectName(_fromUtf8("ki_lineEdit"))
         self.kd_lineEdit = QtGui.QLineEdit(self.tab)
         self.kd_lineEdit.setGeometry(QtCore.QRect(480, 200, 41, 31))
-        self.kd_lineEdit.setReadOnly(True)
+        self.kd_lineEdit.setReadOnly(False)
         self.kd_lineEdit.setObjectName(_fromUtf8("kd_lineEdit"))
         self.setpoint_lineEdit = QtGui.QLineEdit(self.tab)
         self.setpoint_lineEdit.setGeometry(QtCore.QRect(480, 240, 41, 31))
-        self.setpoint_lineEdit.setReadOnly(True)
+        self.setpoint_lineEdit.setReadOnly(False)
         self.setpoint_lineEdit.setObjectName(_fromUtf8("setpoint_lineEdit"))
         self.label = QtGui.QLabel(self.tab)
         self.label.setGeometry(QtCore.QRect(70, 120, 67, 17))
@@ -143,6 +143,9 @@ class Ui_MainWindow(object):
         self.label_13 = QtGui.QLabel(self.tab)
         self.label_13.setGeometry(QtCore.QRect(70, 450, 67, 17))
         self.label_13.setObjectName(_fromUtf8("label_13"))
+        self.resetButton = QtGui.QPushButton(self.tab)
+        self.resetButton.setGeometry(QtCore.QRect(750, 390, 91, 71))
+        self.resetButton.setObjectName(_fromUtf8("resetButton"))
         self.tabWidget.addTab(self.tab, _fromUtf8(""))
         self.tab_2 = QtGui.QWidget()
         self.tab_2.setObjectName(_fromUtf8("tab_2"))
@@ -222,6 +225,7 @@ class Ui_MainWindow(object):
         self.label_11.setText(_translate("MainWindow", "ki", None))
         self.label_12.setText(_translate("MainWindow", "kp", None))
         self.label_13.setText(_translate("MainWindow", "kd", None))
+        self.resetButton.setText(_translate("MainWindow", "Reset", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab), _translate("MainWindow", "PID", None))
         self.label_14.setText(_translate("MainWindow", "Yaw", None))
         self.label_15.setText(_translate("MainWindow", "Pitch", None))

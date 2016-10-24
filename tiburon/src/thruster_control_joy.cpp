@@ -49,8 +49,8 @@ Thruster::Thruster():
 	//thruster_off(1),		
 	//thruster_on(2),			
 	thruster_button(5),
-	thruster_init(4),		//Y button
-	runmode(8), 			//A button (numbering acc to jstest)
+	thruster_init(4),		         //Y button
+	runmode(8), 			        //A button (numbering acc to jstest)
 	f(0),					//toggles runmode (on-off)
 	g(0),					//toggles thruster (on-off)
 	fp(3),					//Y button for frontpitchspeed

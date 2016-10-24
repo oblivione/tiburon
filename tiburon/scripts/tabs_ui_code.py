@@ -11,6 +11,7 @@ from geometry_msgs.msg import Vector3
 
 pub=rospy.Publisher("pid_values",pid,queue_size=1)
 
+#TODO : set slider value according to the value typed (According to radio button signal)
 
 frontpitchspeed_val, backpitchspeed_val, sideleftspeed_val, siderightspeed_val = 0,0,0,0
 setpoint_yaw, setpoint_pitch, setpoint_depth, setpoint_forward = 0,0,0,0
@@ -34,10 +35,12 @@ class Panel(QtGui.QMainWindow):
         self.forwardY = []
         self.setpoint_f = []
 
+        #TODO: set slider according to line edit
+        self.ui.kp_lineEdit.textEdited.connect(self.update_kp_slider)
+        
         self.signals()
         self.setslidervalues()        
         self.msg = pid()
-
 
         #speed
         self.speed()
@@ -45,18 +48,34 @@ class Panel(QtGui.QMainWindow):
         #tab 2: graphs
         self.graph()
 
+        #button
+        self.ui.resetButton.clicked.connect(self.reset)
+
         #updates sliders,lineEdit on changing radio buttons
         #it also updates the speed, table
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.update)
         self._timer.start(10)
 
-
+    def reset(self):
+        self.msg.kp_yaw = 0
+        self.msg.kp_pitch = 0
+        self.msg.kp_depth = 0
+        self.msg.kp_forward = 0
+        self.msg.ki_yaw = 0
+        self.msg.ki_pitch = 0
+        self.msg.ki_forward = 0
+        self.msg.ki_depth = 0
+        self.msg.kd_yaw = 0
+        self.msg.kd_pitch = 0
+        self.msg.kd_depth = 0
+        self.msg.kd_forward = 0
+  
     def setslidervalues(self):
         self.ui.kp_slider.setRange(0,20)
         self.ui.ki_slider.setRange(0,20)
         self.ui.kd_slider.setRange(0,20)
-        self.ui.setpoint_slider.setRange(-30,30)
+        self.ui.setpoint_slider.setRange(-90,1300)
 
         self.ui.kp_slider.setValue(0)
         self.ui.ki_slider.setValue(0)
@@ -73,8 +92,23 @@ class Panel(QtGui.QMainWindow):
         self.connect(self.ui.ki_slider,QtCore.SIGNAL("valueChanged(int)"),self.ki)
         self.connect(self.ui.kd_slider,QtCore.SIGNAL("valueChanged(int)"),self.kd)
         self.connect(self.ui.setpoint_slider,QtCore.SIGNAL("valueChanged(int)"),self.setpoint)
+        #update slider according to value entered
+        #self.connect(self.ui.kp_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_kp_slider)
+        #self.connect(self.ui.ki_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_ki_slider)
+        #self.connect(self.ui.kd_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_kd_slider)
+        #self.connect(self.ui.setpoint_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_setpoint_slider)
 
     @QtCore.pyqtSlot(str)
+    def update_kp_slider(self):
+        print "entered"
+        print self.ui.kp_lineEdit.text()
+        self.ui.kp_slider.setValue(self.ui.kp_lineEdit.text())
+    '''
+    def update_ki_slider(self):
+    def update_kd_slider(self):
+    def update_setpoint_slider(self):
+    '''
+
     def kp(self):
         if(self.ui.yaw_radioButton.isChecked()):
             self.msg.kp_yaw = self.ui.kp_slider.value()
@@ -172,6 +206,7 @@ class Panel(QtGui.QMainWindow):
             self.ui.ki_slider.setValue(self.msg.ki_yaw)
             self.ui.kd_slider.setValue(self.msg.kd_yaw)
             self.ui.setpoint_slider.setValue(self.msg.setpoint_yaw)
+            self.ui.setpoint_slider.setRange(-30,30)
         elif(self.ui.pitch_radioButton.isChecked()):
             self.ui.kp_lineEdit.setText(str(self.msg.kp_pitch))
             self.ui.ki_lineEdit.setText(str(self.msg.ki_pitch))
@@ -181,6 +216,7 @@ class Panel(QtGui.QMainWindow):
             self.ui.ki_slider.setValue(self.msg.ki_pitch)
             self.ui.kd_slider.setValue(self.msg.kd_pitch)
             self.ui.setpoint_slider.setValue(self.msg.setpoint_pitch)
+            self.ui.setpoint_slider.setRange(-90,90)
         elif(self.ui.depth_radioButton.isChecked()):
             self.ui.kp_lineEdit.setText(str(self.msg.kp_depth))
             self.ui.ki_lineEdit.setText(str(self.msg.ki_depth))
@@ -190,15 +226,17 @@ class Panel(QtGui.QMainWindow):
             self.ui.ki_slider.setValue(self.msg.ki_depth)
             self.ui.kd_slider.setValue(self.msg.kd_depth)
             self.ui.setpoint_slider.setValue(self.msg.setpoint_depth)
+            self.ui.setpoint_slider.setRange(970,1300)
         elif(self.ui.forward_radioButton.isChecked()):
             self.ui.kp_lineEdit.setText(str(self.msg.kp_depth))
             self.ui.ki_lineEdit.setText(str(self.msg.ki_depth))
             self.ui.kd_lineEdit.setText(str(self.msg.kd_depth))
-            self.ui.setpoint_lineEdit.setText(str(self.msg.setpoint_depth))
+            self.ui.setpoint_lineEdit.setText(str(self.msg.setpoint_forward))
             self.ui.kp_slider.setValue(self.msg.kp_forward)
             self.ui.ki_slider.setValue(self.msg.ki_forward)
             self.ui.kd_slider.setValue(self.msg.kd_forward)
             self.ui.setpoint_slider.setValue(self.msg.setpoint_forward)
+            self.ui.setpoint_slider.setRange(0,10)
         #update table
         self.ui.tableWidget.setItem(0, 0, QtGui.QTableWidgetItem(str(self.msg.kp_yaw)))
         self.ui.tableWidget.setItem(1, 0, QtGui.QTableWidgetItem(str(self.msg.ki_yaw)))
@@ -217,7 +255,6 @@ class Panel(QtGui.QMainWindow):
         self.ui.tableWidget.setItem(2, 3, QtGui.QTableWidgetItem(str(self.msg.kd_forward)))
         self.ui.tableWidget.setItem(3, 3, QtGui.QTableWidgetItem(str(self.msg.setpoint_forward)))
                 
-
     def speed(self):
         self.sub_front=rospy.Subscriber("frontpitchspeed",UInt16,self.frontcallback)
         self.sub_back=rospy.Subscriber("backpitchspeed",UInt16,self.backcallback)
@@ -232,17 +269,17 @@ class Panel(QtGui.QMainWindow):
         global backpitchspeed_val
         backpitchspeed_val = msg.data
     def leftcallback(self,msg):
-        global leftpitchspeed_val
-        leftpitchspeed_val = msg.data
+        global sideleftspeed_val
+        sideleftspeed_val = msg.data
     def rightcallback(self,msg):
-        global rightpitchspeed_val
-        rightpitchspeed_val = msg.data
+        global siderightspeed_val
+        siderightspeed_val = msg.data
 
     def graph(self):
         self.graph_depth()
         self.graph_pitch()
         self.graph_yaw()
-        self.graph_forward()
+        #self.graph_forward() #UNCOMMENT IT AFTER ENSURING TOPIC TYPE AND forwardY parameter 
 
     def graph_depth(self):
         rospy.Subscriber('depth_value',Float64,self.depthCallback)
@@ -250,7 +287,7 @@ class Panel(QtGui.QMainWindow):
         self.startTime = self.startTimeNow.secs + 10**-9*self.startTimeNow.nsecs
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.play_d)
-        self._timer.start(100)
+        self._timer.start(25) #calls play_d ever 50 ms
 
     def play_d(self):
         self.ui.depth_graphicsView.plot(self.depthX, self.depthY)
@@ -265,10 +302,10 @@ class Panel(QtGui.QMainWindow):
         self.setpoint_d.append(setpoint_depth)
 
     def graph_pitch(self):
-        rospy.Subscriber("/vn_100/ins_data",ins_data,self.pitchCallback)
+        rospy.Subscriber("/tiburon/ins_data",ins_data,self.pitchCallback)
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.play_p)
-        self._timer.start(100)
+        self._timer.start(25)
         
     def play_p(self):
         self.ui.pitch_graphicsView.plot(self.pitchX, self.pitchY)
@@ -286,7 +323,7 @@ class Panel(QtGui.QMainWindow):
         rospy.Subscriber("/tiburon/ins_data",ins_data,self.yawCallback)
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.play_y)
-        self._timer.start(100)
+        self._timer.start(25)
         
     def play_y(self):
         self.ui.yaw_graphicsView.plot(self.yawX, self.yawY)
@@ -305,7 +342,7 @@ class Panel(QtGui.QMainWindow):
         rospy.Subscriber("/true_velocity",Vector3,self.forwardCallback) #TODO WRITE THE CORRECT TOPIC TYPE
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.play_f)
-        self._timer.start(100)
+        self._timer.start(50)
 
     def play_f(self):
         self.ui.forward_graphicsView.plot(self.forwardX, self.forwardY)

@@ -61,8 +61,8 @@ def callback(config,level):
     pitchController.Kd = config.ki_pitch
     yawController.Kp = config.kp_yaw/25.0
     yawController.Kd = config.kd_yaw
-    yawController.Kp = config.kp_yaw/50.0
-    yawController.Kd = config.kd_yaw    
+    forwardController.Kp = config.kp_yaw/50.0
+    forwardController.Kd = config.kd_yaw
     if depthController.Ki != config.ki_depth:
         depthController.Ki = config.ki_depth/1000.0
         depthController.IError = 0.00
@@ -79,6 +79,7 @@ def callback(config,level):
     depthController.checkpoint = config.setpoint_depth
     pitchController.checkpoint = config.setpoint_pitch
     yawController.checkpoint = config.setpoint_yaw
+    forwardController.checkpoint = config.setpoint_forward
     desiredAcceleration = config.desAccl
     print "Act Kp: ",config.kp_pitch
     print "D: ",depthController.checkpoint,"Y: ",yawController.checkpoint,"P: ",pitchController.checkpoint
@@ -103,6 +104,17 @@ def main():
     srv=Server(yawPitchDepthConfig,callback)
     rate = rospy.Rate(200) # 200 Hz
     thruster1 = thruster2 = thruster3 = thruster4 = 0.0
+    frontSpeeds = []
+    backSpeeds = []
+    leftSpeeds = []
+    rightSpeeds = []
+    pos = 0
+    for i in range(10):
+        frontSpeeds.append(1500)
+        backSpeeds.append(1500)
+        leftSpeeds.append(1500)
+        rightSpeeds.append(1500)
+    printcounter = 0
     while not rospy.is_shutdown():
         # If either value is still not Received, do nothing
         if depthReceived==0 or pitchAndYawReceived==0 or velRecieved == 0:
@@ -140,11 +152,11 @@ def main():
         _cos = math.cos(pitchController.currentVal/180 * math.pi)
         A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [-vp.x1, vp.x2, 0, 0], [0, 0, vp.x3, -vp.x4]])
         b = np.array([depthU+ vp.B - vp.weight, forwardU, pitchU + vp.B * vp.xB, yawU + vp.J*thruster1 + vp.J*thruster2])
-        print A
-        print b
+        # print A
+        # print b
         F1,F2,F3,F4 = np.linalg.solve(A,b)
-        print "U1: ",depthU,"Kp: ",pitchController.Kp, "U3 :",pitchU, "U4: ",yawU
-        print "F1: ",F1,"F2: ",F2,"F3: ",F3,"F4: ",F4
+        # print "U1: ",depthU,"Kp: ",pitchController.Kp, "U3 :",pitchU, "U4: ",yawU
+        # print "F1: ",F1,"F2: ",F2,"F3: ",F3,"F4: ",F4
         if F1>=vp.thrusterMin:
             targetFrontSpeed = (((F1 - vp.thrusterMin)/vp.thrusterRatioF)**0.5)+1520
         elif F1<=-vp.thrusterMin*0.7:
@@ -220,18 +232,35 @@ def main():
 		#     thruster4 = thruster4+desiredAcceleration
         # elif(targetRightSpeed<=1500 and 1500+thruster4>=targetRightSpeed):
 		#     thruster4 = thruster4 - desiredAcceleration
-
-    	print "TForward:",targetFrontSpeed,"TBack:",targetBackSpeed,"TLeft:",targetLeftSpeed,"TRight:",targetRightSpeed
+        if printcounter == 10:
+    	   print "TForward:",targetFrontSpeed,"TBack:",targetBackSpeed,"TLeft:",targetLeftSpeed,"TRight:",targetRightSpeed
+           print "Depth Kp: ",depthController.u, depthController.Kp * depthController.error, depthController.Ki * depthController.IError, depthController.Kd * depthController.dError
+           print "Yaw Kp: ",yawController.u, yawController.Kp * yawController.error, yawController.Ki * yawController.IError, yawController.Kd * yawController.dError
+           printcounter = 0
+        else:
+            printcounter = printcounter+1
         # print "Forward:",1500+thruster1,"Back:",1500+thruster2,"Left:",1500+thruster3,"Right:",1500+thruster4
         #
         # frontPitchPub.publish(1500+thruster1)
         # backPitchPub.publish(1500+thruster2)
         # sideLeftSpeedPub.publish(1500+thruster3)
         # sideRightSpeedPub.publish(1500+thruster4)
-        frontPitchPub.publish(targetFrontSpeed)
-        backPitchPub.publish(targetBackSpeed)
-        sideLeftSpeedPub.publish(targetLeftSpeed)
-        sideRightSpeedPub.publish(targetRightSpeed)
+        frontSpeeds[pos]=targetFrontSpeed
+        backSpeeds[pos]=targetBackSpeed
+        leftSpeeds[pos]=targetLeftSpeed
+        rightSpeeds[pos]=targetRightSpeed
+        pos = (pos+1)%10
+        targetFrontSpeed = targetBackSpeed = targetLeftSpeed = targetRightSpeed = 0
+        for i in range(10):
+            targetFrontSpeed += frontSpeeds[i]
+            targetBackSpeed +=backSpeeds[i]
+            targetLeftSpeed +=leftSpeeds[i]
+            targetRightSpeed +=rightSpeeds[i]
+
+        frontPitchPub.publish(int(targetFrontSpeed/10))
+        backPitchPub.publish(int(targetBackSpeed/10))
+        sideLeftSpeedPub.publish(int(targetLeftSpeed/10))
+        sideRightSpeedPub.publish(int(targetRightSpeed/10))
         rate.sleep()
 
 

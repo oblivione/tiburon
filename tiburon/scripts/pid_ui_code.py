@@ -72,7 +72,7 @@ class pidPanel(QtGui.QMainWindow):
 
         self.ui.ckpoint_lineEdit.setText(str(self.ckpoint_yaw))
         self.ui.kp_yaw_lineEdit.setText(str(self.kp_yaw)) #kp
-        self.ui.ki_yaw_lineEdit.setText(str(self.ki_yaw)) #ki
+        self.ui.ki_yaw_lineEdit.setText(str(self.ki_yaw)) #ki_yaw
         self.ui.kd_yaw_lineEdit.setText(str(self.kd_yaw)) #kd
 
         self.ui.kp_depth_lineEdit.setText(str(self.kp_depth)) #kp

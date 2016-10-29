@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Sat Oct 22 12:35:07 2016
+# Created: Sat Oct 29 17:06:22 2016
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -26,11 +26,11 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.resize(1145, 710)
+        MainWindow.resize(1231, 879)
         self.centralWidget = QtGui.QWidget(MainWindow)
         self.centralWidget.setObjectName(_fromUtf8("centralWidget"))
         self.tabWidget = QtGui.QTabWidget(self.centralWidget)
-        self.tabWidget.setGeometry(QtCore.QRect(10, 0, 1101, 631))
+        self.tabWidget.setGeometry(QtCore.QRect(10, 0, 1201, 761))
         self.tabWidget.setObjectName(_fromUtf8("tabWidget"))
         self.tab = QtGui.QWidget()
         self.tab.setObjectName(_fromUtf8("tab"))
@@ -160,7 +160,7 @@ class Ui_MainWindow(object):
         self.label_14.setFont(font)
         self.label_14.setObjectName(_fromUtf8("label_14"))
         self.label_15 = QtGui.QLabel(self.tab_2)
-        self.label_15.setGeometry(QtCore.QRect(620, 20, 67, 17))
+        self.label_15.setGeometry(QtCore.QRect(460, 20, 67, 17))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
@@ -174,25 +174,35 @@ class Ui_MainWindow(object):
         self.label_16.setFont(font)
         self.label_16.setObjectName(_fromUtf8("label_16"))
         self.label_17 = QtGui.QLabel(self.tab_2)
-        self.label_17.setGeometry(QtCore.QRect(620, 300, 67, 17))
+        self.label_17.setGeometry(QtCore.QRect(450, 300, 67, 17))
         font = QtGui.QFont()
         font.setBold(True)
         font.setWeight(75)
         self.label_17.setFont(font)
         self.label_17.setObjectName(_fromUtf8("label_17"))
         self.pitch_graphicsView = PlotWidget(self.tab_2)
-        self.pitch_graphicsView.setGeometry(QtCore.QRect(620, 50, 351, 201))
+        self.pitch_graphicsView.setGeometry(QtCore.QRect(450, 50, 351, 201))
         self.pitch_graphicsView.setObjectName(_fromUtf8("pitch_graphicsView"))
         self.depth_graphicsView = PlotWidget(self.tab_2)
         self.depth_graphicsView.setGeometry(QtCore.QRect(60, 330, 351, 201))
         self.depth_graphicsView.setObjectName(_fromUtf8("depth_graphicsView"))
         self.forward_graphicsView = PlotWidget(self.tab_2)
-        self.forward_graphicsView.setGeometry(QtCore.QRect(620, 330, 351, 201))
+        self.forward_graphicsView.setGeometry(QtCore.QRect(440, 330, 351, 201))
         self.forward_graphicsView.setObjectName(_fromUtf8("forward_graphicsView"))
+        self.comboBox = QtGui.QComboBox(self.tab_2)
+        self.comboBox.setGeometry(QtCore.QRect(840, 60, 211, 61))
+        self.comboBox.setObjectName(_fromUtf8("comboBox"))
+        self.comboBox.addItem(_fromUtf8(""))
+        self.comboBox.addItem(_fromUtf8(""))
+        self.comboBox.addItem(_fromUtf8(""))
+        self.comboBox.addItem(_fromUtf8(""))
+        self.selective_graph = PlotWidget(self.tab_2)
+        self.selective_graph.setGeometry(QtCore.QRect(840, 150, 331, 281))
+        self.selective_graph.setObjectName(_fromUtf8("selective_graph"))
         self.tabWidget.addTab(self.tab_2, _fromUtf8(""))
         MainWindow.setCentralWidget(self.centralWidget)
         self.menuBar = QtGui.QMenuBar(MainWindow)
-        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1145, 25))
+        self.menuBar.setGeometry(QtCore.QRect(0, 0, 1231, 25))
         self.menuBar.setObjectName(_fromUtf8("menuBar"))
         MainWindow.setMenuBar(self.menuBar)
         self.mainToolBar = QtGui.QToolBar(MainWindow)
@@ -203,7 +213,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusBar)
 
         self.retranslateUi(MainWindow)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -231,6 +241,10 @@ class Ui_MainWindow(object):
         self.label_15.setText(_translate("MainWindow", "Pitch", None))
         self.label_16.setText(_translate("MainWindow", "Depth", None))
         self.label_17.setText(_translate("MainWindow", "Forward", None))
+        self.comboBox.setItemText(0, _translate("MainWindow", "YAW", None))
+        self.comboBox.setItemText(1, _translate("MainWindow", "PITCH", None))
+        self.comboBox.setItemText(2, _translate("MainWindow", "DEPTH", None))
+        self.comboBox.setItemText(3, _translate("MainWindow", "FORWARD", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Graphs", None))
 
 from pyqtgraph import PlotWidget

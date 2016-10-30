@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'mainwindow.ui'
 #
-# Created: Sat Oct 29 17:06:22 2016
+# Created: Sun Oct 30 16:19:19 2016
 #      by: PyQt4 UI code generator 4.10.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -194,8 +194,6 @@ class Ui_MainWindow(object):
         self.comboBox.setObjectName(_fromUtf8("comboBox"))
         self.comboBox.addItem(_fromUtf8(""))
         self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.addItem(_fromUtf8(""))
-        self.comboBox.addItem(_fromUtf8(""))
         self.selective_graph = PlotWidget(self.tab_2)
         self.selective_graph.setGeometry(QtCore.QRect(840, 150, 331, 281))
         self.selective_graph.setObjectName(_fromUtf8("selective_graph"))
@@ -243,8 +241,6 @@ class Ui_MainWindow(object):
         self.label_17.setText(_translate("MainWindow", "Forward", None))
         self.comboBox.setItemText(0, _translate("MainWindow", "YAW", None))
         self.comboBox.setItemText(1, _translate("MainWindow", "PITCH", None))
-        self.comboBox.setItemText(2, _translate("MainWindow", "DEPTH", None))
-        self.comboBox.setItemText(3, _translate("MainWindow", "FORWARD", None))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.tab_2), _translate("MainWindow", "Graphs", None))
 
 from pyqtgraph import PlotWidget

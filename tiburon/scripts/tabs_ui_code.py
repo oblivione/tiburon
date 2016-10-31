@@ -69,11 +69,13 @@ class Panel(QtGui.QMainWindow):
           #button
         self.ui.resetButton.clicked.connect(self.reset)
 
+        self.c = 1 #selective graph(default:yaw)
+
         #updates sliders,lineEdit on changing radio buttons
         #it also updates the speed, table
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.update)
-        self._timer.start(10)
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.update)
+        self.timer.start(10)
 
     def update_table(self, msg):
         dict = {'kp_yaw' : 00, 'ki_yaw' : 10, 'kd_yaw' : 20, 'setpoint_yaw' : 30,
@@ -131,7 +133,6 @@ class Panel(QtGui.QMainWindow):
 
     @QtCore.pyqtSlot(str)
     def graph_select(self,text):
-        self.ui.selective_graph.clear()
         self.select_pitchX = []
         self.select_pitchY = []
         self.select_setpoint_p = []
@@ -139,27 +140,14 @@ class Panel(QtGui.QMainWindow):
         self.select_yawY = []
         self.select_setpoint_y = []
         if(text == "YAW"): 
-            self.graph_select_yaw()
-            self.ui.selective_graph.removePlot(self.p1)
-            self.ui.selective_graph.removePlot(self.p2)
+            self.c = 1
+            rospy.Subscriber("/tiburon/ins_data",ins_data,self.select_yawCallback)
+            #self.graph_select_yaw()
         elif(text == "PITCH"):
-            self.graph_select_pitch()
-            self.ui.selective_graph.removePlot(self.y1)
-            self.ui.selective_graph.removePlot(self.y2)
-        #elif(text == "DEPTH"):
-        #    self.graph_select_depth()
-        
-    def graph_select_pitch(self):
-        rospy.Subscriber("/tiburon/ins_data",ins_data,self.select_pitchCallback)
-        self.ui.selective_graph.clear()
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.select_play_p)
-        self._timer.start(50)
-        
-    def select_play_p(self):
-        self.p1 = self.ui.selective_graph.plot(self.select_pitchX, self.select_pitchY)  #REMOVE
-        self.p2 = self.ui.selective_graph.plot(self.select_pitchX, self.select_setpoint_p) #REMOVE
-
+            self.c = 2
+            rospy.Subscriber("/tiburon/ins_data",ins_data,self.select_pitchCallback)
+            #self.graph_select_pitch()
+           
     def select_pitchCallback(self,msg):
         global setpoint_pitch
         self.select_pitchTimeNow = rospy.get_rostime()
@@ -167,18 +155,7 @@ class Panel(QtGui.QMainWindow):
         self.select_pitchY.append(msg.YPR.y)
         self.select_pitchX.append(self.select_pitchTime-self.startTime)
         self.select_setpoint_p.append(setpoint_pitch)
-
-    def graph_select_yaw(self):
-        rospy.Subscriber("/tiburon/ins_data",ins_data,self.select_yawCallback)
-        self.ui.selective_graph.clear()
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.select_play_y)
-        self._timer.start(50)
-        
-    def select_play_y(self):
-        self.y1 = self.ui.selective_graph.plot(self.select_yawX, self.select_yawY)  #REMOVE
-        self.y2 = self.ui.selective_graph.plot(self.select_yawX, self.select_setpoint_y) #REMOVE
-
+         
     def select_yawCallback(self,msg):
         global setpoint_yaw
         self.select_yawTimeNow = rospy.get_rostime()
@@ -367,22 +344,34 @@ class Panel(QtGui.QMainWindow):
         siderightspeed_val = msg.data
 
     def graph(self):
-        self.graph_depth()
-        self.graph_pitch()
-        self.graph_yaw()
-        #self.graph_forward() #UNCOMMENT IT AFTER ENSURING TOPIC TYPE AND forwardY parameter 
-
-    def graph_depth(self):
         rospy.Subscriber('depth_value',Float64,self.depthCallback)
+        rospy.Subscriber("/tiburon/ins_data",ins_data,self.pitchCallback)
+        rospy.Subscriber("/tiburon/ins_data",ins_data,self.yawCallback)
+        #rospy.Subscriber("/tiburon/true_velocity",Vector3,self.forwardCallback) #TODO WRITE THE CORRECT TOPIC TYPE        
         self.startTimeNow = rospy.get_rostime()
         self.startTime = self.startTimeNow.secs + 10**-9*self.startTimeNow.nsecs
         self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.play_d)
+        self._timer.timeout.connect(self.play)
         self._timer.start(50) #calls play_d ever 50 ms
 
-    def play_d(self):
+    def play(self):
+        self.update()
         self.ui.depth_graphicsView.plot(self.depthX, self.depthY)
-        self.ui.depth_graphicsView.plot(self.depthX, self.setpoint_d)
+        self.ui.depth_graphicsView.plot(self.depthX, self.setpoint_d) 
+        self.ui.pitch_graphicsView.plot(self.pitchX, self.pitchY)
+        self.ui.pitch_graphicsView.plot(self.pitchX, self.setpoint_p)
+        self.ui.yaw_graphicsView.plot(self.yawX, self.yawY)
+        self.ui.yaw_graphicsView.plot(self.yawX, self.setpoint_y)
+        #self.ui.forward_graphicsView.plot(self.forwardX, self.forwardY)
+        #self.ui.forward_graphicsView.plot(self.forwardX, self.setpoint_y)
+        
+        #selective graph
+        if(self.c == 2):
+            self.ui.selective_graph.plot(self.select_pitchX, self.select_pitchY)  
+            self.ui.selective_graph.plot(self.select_pitchX, self.select_setpoint_p) 
+        elif(self.c == 1):
+            self.ui.selective_graph.plot(self.select_yawX, self.select_yawY) 
+            self.ui.selective_graph.plot(self.select_yawX, self.select_setpoint_y) 
 
     def depthCallback(self,msg):
         global setpoint_depth
@@ -391,17 +380,7 @@ class Panel(QtGui.QMainWindow):
         self.depthY.append(msg.data)
         self.depthX.append(self.depthTime-self.startTime)
         self.setpoint_d.append(setpoint_depth)
-
-    def graph_pitch(self):
-        rospy.Subscriber("/tiburon/ins_data",ins_data,self.pitchCallback)
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.play_p)
-        self._timer.start(50)
-        
-    def play_p(self):
-        self.ui.pitch_graphicsView.plot(self.pitchX, self.pitchY)
-        self.ui.pitch_graphicsView.plot(self.pitchX, self.setpoint_p)
-
+            
     def pitchCallback(self,msg):
         global setpoint_pitch
         self.pitchTimeNow = rospy.get_rostime()
@@ -409,17 +388,7 @@ class Panel(QtGui.QMainWindow):
         self.pitchY.append(msg.YPR.y)
         self.pitchX.append(self.pitchTime-self.startTime)
         self.setpoint_p.append(setpoint_pitch)
-
-    def graph_yaw(self):
-        rospy.Subscriber("/tiburon/ins_data",ins_data,self.yawCallback)
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.play_y)
-        self._timer.start(50)
-        
-    def play_y(self):
-        self.ui.yaw_graphicsView.plot(self.yawX, self.yawY)
-        self.ui.yaw_graphicsView.plot(self.yawX, self.setpoint_y)
-    
+              
     def yawCallback(self,msg):
         global setpoint_yaw
         self.yawTimeNow = rospy.get_rostime()
@@ -427,17 +396,6 @@ class Panel(QtGui.QMainWindow):
         self.yawY.append(msg.YPR.x)
         self.yawX.append(self.yawTime-self.startTime)
         self.setpoint_y.append(setpoint_yaw)
-
-    
-    def graph_forward(self):
-        rospy.Subscriber("/tiburon/true_velocity",Vector3,self.forwardCallback) #TODO WRITE THE CORRECT TOPIC TYPE
-        self._timer = QtCore.QTimer(self)
-        self._timer.timeout.connect(self.play_f)
-        self._timer.start(50)
-
-    def play_f(self):
-        self.ui.forward_graphicsView.plot(self.forwardX, self.forwardY)
-        self.ui.forward_graphicsView.plot(self.forwardX, self.setpoint_y)
 
     def forwardCallback(self,msg):
         global setpoint_forward

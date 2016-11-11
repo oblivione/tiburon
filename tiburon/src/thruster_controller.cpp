@@ -1,3 +1,9 @@
+/*
+If this code does not work, please check if the Pololu Servo Controller's Serial
+mode is set to "USB Dual Port". This can be done by using the provided UI for
+servo control by Pololu.
+*/
+
 #include "ros/ros.h"
 #include "std_msgs/UInt16.h"
 #include <fcntl.h>
@@ -44,7 +50,7 @@ void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster1)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,11,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,0,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to front thruster");
@@ -55,7 +61,7 @@ void backcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster2)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,10,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,1,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to back thruster");
@@ -66,7 +72,7 @@ void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster3)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,3,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,2,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to left thruster");
@@ -77,7 +83,7 @@ void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster4)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,5,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,3,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to right thruster");

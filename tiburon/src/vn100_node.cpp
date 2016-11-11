@@ -17,7 +17,7 @@
 	ros::Publisher pubsens_data;
 	ros::Publisher pubins_data;
 	ros::Publisher pubvelocity_data;
-	
+
 //Device
 	Vn100 vn100;
 	std::string imu_frame_id;
@@ -32,13 +32,13 @@ void asyncDataListener(Vn100* vn100,Vn100CompositeData* data)
 	         "YPR.pitch: %+#7.2f\n"
 	         "YPR.roll: %+#7.2f\n",
 	         data->ypr.yaw,
-	         data->ypr.pitch, 
+	         data->ypr.pitch,
 	         data->ypr.roll);
 	ROS_INFO(
 	     "\n quaternion.X:  %+#7.2f\n"
 	     "   quaternion.Y:  %+#7.2f\n"
 	     "   quaternion.Z:  %+#7.2f\n"
-	     "   quaternion.W:  %+#7.2f\n", 
+	     "   quaternion.W:  %+#7.2f\n",
 	        data->quaternion.x,
 	        data->quaternion.y,
 	        data->quaternion.z,
@@ -48,7 +48,7 @@ void asyncDataListener(Vn100* vn100,Vn100CompositeData* data)
 	       " magnetic X:  %+#7.2f, %+#7.2f\n"
 	       " magnetic Y:  %+#7.2f, %+#7.2f\n"
 	       " magnetic Z:  %+#7.2f, %+#7.2f\n",
-	         data->magnetic.c0,data->magneticVoltage.c0, 
+	         data->magnetic.c0,data->magneticVoltage.c0,
 	         data->magnetic.c1,data->magneticVoltage.c1,
 	         data->magnetic.c2,data->magneticVoltage.c2);
 	ROS_INFO(
@@ -67,24 +67,24 @@ void asyncDataListener(Vn100* vn100,Vn100CompositeData* data)
 	  "  angularRate Y:          %+#7.2f, %+#7.2f, %+#7.2f, %+#7.2f\n"
 	  "  angularRate Z:          %+#7.2f, %+#7.2f, %+#7.2f, %+#7.2f\n",
 		  data->angularRate.c0,
-	          data->angularRateVoltage.c0, 
+	          data->angularRateVoltage.c0,
 		  data->angularRateBias.c0,
-	          data->angularRateBiasVariance.c0, 
-		  data->angularRate.c1,    
-	          data->angularRateVoltage.c1, 
-		  data->angularRateBias.c1, 
-	          data->angularRateBiasVariance.c1, 
-		  data->angularRate.c2,    
+	          data->angularRateBiasVariance.c0,
+		  data->angularRate.c1,
+	          data->angularRateVoltage.c1,
+		  data->angularRateBias.c1,
+	          data->angularRateBiasVariance.c1,
+		  data->angularRate.c2,
 	          data->angularRateVoltage.c2,
 		  data->angularRateBias.c2, data->angularRateBiasVariance.c2);
 	 ROS_INFO(
 		  "\n  Attitude Variance X:    %+#7.2f\n"
 		  "  Attitude Variance Y:    %+#7.2f\n"
 		  "  Attitude Variance Z:    %+#7.2f\n",
-		  data->attitudeVariance.c0, 
-		  data->attitudeVariance.c1, 
+		  data->attitudeVariance.c0,
+		  data->attitudeVariance.c1,
 		  data->attitudeVariance.c2);
-	
+
 	 ROS_INFO(
 		  "\n  Direction Cosine Matrix:\n"
 		  "    %+#7.2f, %+#7.2f, %+#7.2f\n"
@@ -93,13 +93,13 @@ void asyncDataListener(Vn100* vn100,Vn100CompositeData* data)
 		  data->dcm.c00, data->dcm.c01, data->dcm.c02,
 		  data->dcm.c10, data->dcm.c11, data->dcm.c12,
 		  data->dcm.c20, data->dcm.c21, data->dcm.c22);
-	
+
 	    ROS_INFO(
 		  "\n  Temperature:            %+#7.2f\n"
 		  "  Temperature Voltage:    %+#7.2f\n",
 		  data->temperature,
 		  data->temperatureVoltage);
-	
+
 }
 
 void publish_device()
@@ -199,10 +199,10 @@ void publish_device()
 			velocity_data.delta_Velocity.y=delta_Velocity.c1;
 			velocity_data.delta_Velocity.z=delta_Velocity.c2;
 			pubvelocity_data.publish(velocity_data);
-			
+
 		}
 	}
-	
+
 
 }
 //defining timer publication
@@ -274,7 +274,7 @@ int main(int argc,char** argv)
 
 	pubsens_data  	 	=np.advertise<tiburon::sensor_data> ("sensor_data",1);
 	pubins_data    		=np.advertise<tiburon::ins_data> ("ins_data",1);//Initializing
-	pubvelocity_data	=np.advertise<tiburon::delta_velocity_data>("Delta_Velocity",1);                                                                   
+	pubvelocity_data	=np.advertise<tiburon::delta_velocity_data>("Delta_Velocity",1);
 
 	ros::ServiceServer service=n.advertiseService("query_ins_data",send_data);
 	ROS_INFO("Ready to answer your queries regarding ins data");
@@ -289,19 +289,25 @@ int main(int argc,char** argv)
 		vnerror_msg(vn_err,vn_error_msg);
 		ROS_FATAL("Could not connect to the sensor on this %s port error:%s\n did you ad           d the user to the dialout group???",
        	        port.c_str(),
-	          vn_error_msg.c_str() 
+	          vn_error_msg.c_str()
 		);
 		exit(EXIT_FAILURE);
 	}
 
-	//enable vpe funtion 
-	
+	//enable vpe funtion
+
+	int trialCount = 10;
 	vn_err = vn100_getVpeControl(&vn100,(unsigned char*) enable.c_str(),(unsigned char*) headingMode.c_str(),(unsigned char*)filteringMode.c_str(),(unsigned char*) tuningMode.c_str());
 	if(vn_err!=VNERR_NO_ERROR)
 	{
-		vnerror_msg(vn_err,vn_error_msg);
-		ROS_FATAL("could not able to enable the VPE");	
-		exit(EXIT_FAILURE);
+		while(trialCount-- && vn_err!=VNERR_NO_ERROR)
+		{
+			vnerror_msg(vn_err,vn_error_msg);
+			ROS_FATAL("Unable to enable the VPE");
+			vn_err = vn100_getVpeControl(&vn100,(unsigned char*) enable.c_str(),(unsigned char*) headingMode.c_str(),(unsigned char*)filteringMode.c_str(),(unsigned char*) tuningMode.c_str());
+		}
+		if(trialCount==-1)
+			exit(EXIT_FAILURE);
 	}
 
 	vn_err=vn100_setAsynchronousDataOutputType(&vn100,async_output_type,true);

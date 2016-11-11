@@ -32,6 +32,7 @@ class auvthrusterpanel(QtGui.QMainWindow):
         self.ui.ThrustersInitialize.clicked.connect(self.thrustersinitialize)
         self.ui.ThrustersOn.clicked.connect(self.thrusterson)
         self.ui.Thrustersoff.clicked.connect(self.thrustersoff)
+        self.ui.ThrustersReset.clicked.connect(self.thrustersReset)
         self.ui.depthSensorOn.clicked.connect(self.sensorOn)
         self.ui.depthSensorOff.clicked.connect(self.sensorOff)
         self.ui.poweroffOBC.clicked.connect(self.poweroffOBC)
@@ -62,6 +63,19 @@ class auvthrusterpanel(QtGui.QMainWindow):
     def errorcallback(self,msg):
         rospy.loginfo(msg.data)
         self.callbackarrived.emit(msg.data)
+
+    def thrustersReset(self):
+        self.ui.front_pitch_slider.setValue(1500)
+        self.ui.back_pitch_slider.setValue(1500)
+        self.ui.side_left_slider.setValue(1500)
+        self.ui.side_right_slider.setValue(1500)
+        # Just changing value of slider will also publish 1500
+        # Yet it is published again just for preventing error if 1500 was sent but not received
+        self.frontpitchspeedpub.publish(1500)
+        self.backpitchspeedpub.publish(1500)
+        self.sideleftspeedpub.publish(1500)
+        self.siderightspeedpub.publish(1500)
+
     def thrustersinitialize(self):
         self.thrusterstatepub.publish(1)
         self.a=2
@@ -77,6 +91,7 @@ class auvthrusterpanel(QtGui.QMainWindow):
             QtGui.QMessageBox.critical(self,'Error!!!!!','Please initialize thrusters before switching them on')
     def thrustersoff(self):
         self.thrusterstatepub.publish(3)
+        self.a=1
     def poweroffOBC(self):
         self.motherboardstatepub.publish(0)
     def OBCon(self):

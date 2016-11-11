@@ -20,7 +20,6 @@ yawController  = AngularPID()
 depthReceived = 0
 pitchAndYawReceived = 0
 velRecieved = 0
-desiredAcceleration = 0.1
 
 def velCallback(msg):
     global forwardController, velRecieved
@@ -30,7 +29,6 @@ def velCallback(msg):
         curPitch = pitchController.currentVal
         forwardController.currentVal = velx*math.cos(curPitch*math.pi/180) - velz*math.sin(curPitch*math.pi/180)
         velRecieved = 1
-
 
 def depthCallback(msg):
     print "Current D",msg.data
@@ -52,6 +50,18 @@ def insCallback(msg):
         pitchController.checkpoint = 0
         yawController.checkpoint = yawController.currentVal
     pitchAndYawReceived = 1
+
+def depthSPUpdate(msg):
+    depthController.checkpoint = msg.data
+
+def yawSPUpdate(msg):
+    yawController.checkpoint = msg.data
+
+def pitchSPUpdate(msg):
+    pitchController.checkpoint = msg.data
+
+def velSPUpdate(msg):
+    forwardController.checkpoint = msg.data
 
 def callback(config,level):
     global depthController, pitchController, yawController
@@ -75,14 +85,6 @@ def callback(config,level):
     if forwardController.Ki != config.ki_for:
         forwardController.Ki = config.ki_for/1000.0
         forwardController.IError = 0.00
-
-    depthController.checkpoint = config.setpoint_depth
-    pitchController.checkpoint = config.setpoint_pitch
-    yawController.checkpoint = config.setpoint_yaw
-    forwardController.checkpoint = config.setpoint_forward
-    desiredAcceleration = config.desAccl
-    print "Act Kp: ",config.kp_pitch
-    print "D: ",depthController.checkpoint,"Y: ",yawController.checkpoint,"P: ",pitchController.checkpoint
     return config
 
 depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback)
@@ -92,7 +94,10 @@ frontPitchPub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
 backPitchPub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
 sideLeftSpeedPub=rospy.Publisher("/sideleftspeed",UInt16,queue_size=1)
 sideRightSpeedPub=rospy.Publisher("/siderightspeed",UInt16,queue_size=1)
-
+depthSetpointSub=rospy.Subscriber("/depthSP",UInt16,queue_size=1,depthSPUpdate)
+yawSetpointSub=rospy.Subscriber("/yawSP",Float64,queue_size=1,yawSPUpdate)
+pitchSetpointSub=rospy.Subscriber("/pitchSP",Float64,queue_size=1,pitchSPUpdate)
+velSetpointSub=rospy.Subscriber("/velSP",Float64,queue_size=1,velSPUpdate)
 
 def main():
     global frontPitchPub, backPitchPub, sideLeftSpeedPub, sideRightSpeedPub
@@ -152,11 +157,8 @@ def main():
         _cos = math.cos(pitchController.currentVal/180 * math.pi)
         A = np.array([[_cos, _cos, _sin, _sin], [-_sin, -_sin, _cos, _cos], [-vp.x1, vp.x2, 0, 0], [0, 0, vp.x3, -vp.x4]])
         b = np.array([depthU+ vp.B - vp.weight, forwardU, pitchU + vp.B * vp.xB, yawU + vp.J*thruster1 + vp.J*thruster2])
-        # print A
-        # print b
         F1,F2,F3,F4 = np.linalg.solve(A,b)
-        # print "U1: ",depthU,"Kp: ",pitchController.Kp, "U3 :",pitchU, "U4: ",yawU
-        # print "F1: ",F1,"F2: ",F2,"F3: ",F3,"F4: ",F4
+
         if F1>=vp.thrusterMin:
             targetFrontSpeed = (((F1 - vp.thrusterMin)/vp.thrusterRatioF)**0.5)+1520
         elif F1<=-vp.thrusterMin*0.7:
@@ -197,54 +199,6 @@ def main():
         elif(targetRightSpeed<1100):
             targetRightSpeed = 1100
 
-        # if(targetFrontSpeed>=1500 and 1500+thruster1<=targetFrontSpeed):
-		#     thruster1 = thruster1+desiredAcceleration
-        # elif(targetFrontSpeed>=1500 and 1500+thruster1>targetFrontSpeed):
-		#     thruster1 = thruster1 - desiredAcceleration
-        # if(targetFrontSpeed<=1500 and 1500+thruster1<targetFrontSpeed):
-		#     thruster1 = thruster1+desiredAcceleration
-        # elif(targetFrontSpeed<=1500 and 1500+thruster1>=targetFrontSpeed):
-		#     thruster1 = thruster1 - desiredAcceleration
-        #
-        # if(targetBackSpeed>=1500 and 1500+thruster2<=targetBackSpeed):
-		#     thruster2 = thruster2+desiredAcceleration
-        # elif(targetBackSpeed>=1500 and 1500+thruster2>targetBackSpeed):
-		#     thruster2 = thruster2 -desiredAcceleration
-        # if(targetBackSpeed<=1500 and 1500+thruster2<targetBackSpeed):
-		#     thruster2 = thruster2+desiredAcceleration
-        # elif(targetBackSpeed<=1500 and 1500+thruster2>=targetBackSpeed):
-		#     thruster2 = thruster2 - desiredAcceleration
-        #
-        # if(targetLeftSpeed>=1500 and 1500+thruster3<=targetLeftSpeed):
-		#     thruster3 = thruster3+desiredAcceleration
-        # elif(targetLeftSpeed>=1500 and 1500+thruster3>targetLeftSpeed):
-		#     thruster3 = thruster3 - desiredAcceleration
-        # if(targetLeftSpeed<=1500 and 1500+thruster3<targetLeftSpeed):
-		#     thruster3 = thruster3+desiredAcceleration
-        # elif(targetLeftSpeed<=1500 and 1500+thruster3>=targetLeftSpeed):
-		#     thruster3 = thruster3 - desiredAcceleration
-        #
-        # if(targetRightSpeed>=1500 and 1500+thruster4<=targetRightSpeed):
-		#     thruster4 = thruster4+desiredAcceleration
-        # elif(targetRightSpeed>=1500 and 1500+thruster4>targetRightSpeed):
-		#     thruster4 = thruster4 - desiredAcceleration
-        # if(targetRightSpeed<=1500 and 1500+thruster4<targetRightSpeed):
-		#     thruster4 = thruster4+desiredAcceleration
-        # elif(targetRightSpeed<=1500 and 1500+thruster4>=targetRightSpeed):
-		#     thruster4 = thruster4 - desiredAcceleration
-        if printcounter == 10:
-    	   print "TForward:",targetFrontSpeed,"TBack:",targetBackSpeed,"TLeft:",targetLeftSpeed,"TRight:",targetRightSpeed
-           print "Depth Kp: ",depthController.u, depthController.Kp * depthController.error, depthController.Ki * depthController.IError, depthController.Kd * depthController.dError
-           print "Yaw Kp: ",yawController.u, yawController.Kp * yawController.error, yawController.Ki * yawController.IError, yawController.Kd * yawController.dError
-           printcounter = 0
-        else:
-            printcounter = printcounter+1
-        # print "Forward:",1500+thruster1,"Back:",1500+thruster2,"Left:",1500+thruster3,"Right:",1500+thruster4
-        #
-        # frontPitchPub.publish(1500+thruster1)
-        # backPitchPub.publish(1500+thruster2)
-        # sideLeftSpeedPub.publish(1500+thruster3)
-        # sideRightSpeedPub.publish(1500+thruster4)
         frontSpeeds[pos]=targetFrontSpeed
         backSpeeds[pos]=targetBackSpeed
         leftSpeeds[pos]=targetLeftSpeed

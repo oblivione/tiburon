@@ -54,6 +54,38 @@ void yaw_callback(const tiburon::ins_data::ConstPtr& ypr_val)
     yaw = ypr_val->YPR.x;
 }
 
+//CHECK!!
+void camera_callback(const sensor_msgs::ImageConstPtr& msg)
+{
+    //http://wiki.ros.org/cv_bridge/Tutorials/UsingCvBridgeToConvertBetweenROSImagesAndOpenCVImages
+    cv_bridge::CvImagePtr cv_ptr;
+    try
+    {
+      cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+      ROS_ERROR("cv_bridge exception: %s", e.what());
+      return;
+    }
+
+    // Update GUI Window
+    cv::imshow(OPENCV_WINDOW, cv_ptr->image);
+    cv::waitKey(3);
+
+    //http://wiki.ros.org/image_transport/Tutorials/SubscribingToImages
+    try
+    {
+        cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
+        cv::waitKey(30);
+    }
+    catch (cv_bridge::Exception& e)
+    {
+        ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
+    }
+
+}
+
 int main(int argc, char **argv)
 {
     namedWindow("Orig",CV_WINDOW_NORMAL);
@@ -66,7 +98,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "bottom_camera_node");
     ros::NodeHandle nh;
     ros::Subscriber camera_sub = nh.subscribe("/auv_camera",1,camera_callback); //dooooo
-    ros::Subscriber yaw_sub = nh.subscribe<tiburon::ins_data>("/tiburon/ins_data",1,yaw_callback);
+    image_transport::Subscriber yaw_sub = nh.subscribe<tiburon::ins_data>("/tiburon/ins_data",1,yaw_callback);
 
     Mat orig,hsv,thresh;
     orig = imread("/home/r2d2/savedim1.jpg");

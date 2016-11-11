@@ -15,9 +15,11 @@ from dynamic_reconfigure.msg import Config
 
 pub=rospy.Publisher("pid_values",pid,queue_size=1)
 #TODO : set slider value according to the value typed (According to radio button signal)
+#TODO: why slider resets to max when value stops(subscribed value)
 
 frontpitchspeed_val, backpitchspeed_val, sideleftspeed_val, siderightspeed_val = 0,0,0,0
-setpoint_yaw, setpoint_pitch, setpoint_depth, setpoint_forward = 0,0,0,0
+setpoint_yaw, setpoint_pitch, setpoint_depth, setpoint_forward = 0.0,0.0,0.0,0.0
+val_yaw, val_pitch, val_depth, val_forward = 0.0,0.0,0.0,0.0
 
 class Panel(QtGui.QMainWindow):
     def __init__(self,parent=None):
@@ -45,18 +47,13 @@ class Panel(QtGui.QMainWindow):
         self.select_yawY = []
         self.select_setpoint_y = []
 
-        #self.ui.depth_graphicsView.enableAutoScale()
-        #self.ui.yaw_graphicsView.enableAutoScale()
-        #self.ui.pitch_graphicsView.enableAutoScale()
-        #self.ui.forward_graphicsView.enableAutoScale()
-        #self.ui.selective_graph.enableAutoScale()
-
+        #update table
         self.sub = rospy.Subscriber("/tiburonController/parameter_updates",Config,self.update_table)
 
         #TODO: set slider according to line edit
-        self.ui.kp_lineEdit.textEdited.connect(self.update_kp_slider)
+        #self.ui.kp_lineEdit.textEdited.connect(self.update_kp_slider)
         
-        self.signals()
+        #self.signals()
         self.setslidervalues()        
         self.msg = pid()
 
@@ -66,18 +63,16 @@ class Panel(QtGui.QMainWindow):
         #tab 2: graphs
         self.graph()
 
-          #button
+        #button
         self.ui.resetButton.clicked.connect(self.reset)
 
         self.c = 1 #selective graph(default:yaw)
 
-        #updates sliders,lineEdit on changing radio buttons
-        #it also updates the speed, table
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(self.update)
-        self.timer.start(10)
-
     def update_table(self, msg):
+        global setpoint_yaw
+        global setpoint_pitch
+        global setpoint_depth
+        global setpoint_forward
         dict = {'kp_yaw' : 00, 'ki_yaw' : 10, 'kd_yaw' : 20, 'setpoint_yaw' : 30,
                 'kp_pitch' : 01, 'ki_pitch' : 11, 'kd_pitch' : 21, 'setpoint_pitch' : 31,
                 'kp_depth' : 02, 'ki_depth' : 12, 'kd_depth' : 22, 'setpoint_depth' : 32,
@@ -88,6 +83,11 @@ class Panel(QtGui.QMainWindow):
             row = dict[msg.doubles[i].name] / 10
             col = dict[msg.doubles[i].name] % 10
             self.ui.tableWidget.setItem(row, col, QtGui.QTableWidgetItem(str(msg.doubles[i].value)))
+
+        setpoint_yaw = float(self.ui.tableWidget.item(3,0).text())
+        setpoint_pitch = float(self.ui.tableWidget.item(3,1).text())
+        setpoint_depth = float(self.ui.tableWidget.item(3,2).text())
+        setpoint_forward = float(self.ui.tableWidget.item(3,3).text())
     
     def reset(self):
         self.msg.kp_yaw = 0
@@ -119,6 +119,7 @@ class Panel(QtGui.QMainWindow):
         self.ui.kd_lineEdit.setText(str(self.ui.kd_slider.value()))
         self.ui.setpoint_lineEdit.setText(str(self.ui.setpoint_slider.value()))
 
+    '''
     def signals(self):
         self.connect(self.ui.kp_slider,QtCore.SIGNAL("valueChanged(int)"),self.kp)
         self.connect(self.ui.ki_slider,QtCore.SIGNAL("valueChanged(int)"),self.ki)
@@ -130,198 +131,40 @@ class Panel(QtGui.QMainWindow):
         #self.connect(self.ui.ki_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_ki_slider)
         #self.connect(self.ui.kd_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_kd_slider)
         #self.connect(self.ui.setpoint_lineEdit,QtCore.SIGNAL("textEdited("")",self.update_setpoint_slider)
+    '''
 
     @QtCore.pyqtSlot(str)
-    def graph_select(self,text):
-        self.select_pitchX = []
-        self.select_pitchY = []
-        self.select_setpoint_p = []
-        self.select_yawX = []
-        self.select_yawY = []
-        self.select_setpoint_y = []
-        if(text == "YAW"): 
-            self.c = 1
-            rospy.Subscriber("/tiburon/ins_data",ins_data,self.select_yawCallback)
-            #self.graph_select_yaw()
-        elif(text == "PITCH"):
-            self.c = 2
-            rospy.Subscriber("/tiburon/ins_data",ins_data,self.select_pitchCallback)
-            #self.graph_select_pitch()
-           
-    def select_pitchCallback(self,msg):
-        global setpoint_pitch
-        self.select_pitchTimeNow = rospy.get_rostime()
-        self.select_pitchTime = self.select_pitchTimeNow.secs + 10**-9*self.select_pitchTimeNow.nsecs
-        self.select_pitchY.append(msg.YPR.y)
-        self.select_pitchX.append(self.select_pitchTime-self.startTime)
-        self.select_setpoint_p.append(setpoint_pitch)
-         
-    def select_yawCallback(self,msg):
-        global setpoint_yaw
-        self.select_yawTimeNow = rospy.get_rostime()
-        self.select_yawTime = self.select_yawTimeNow.secs + 10**-9*self.select_yawTimeNow.nsecs
-        self.select_yawY.append(msg.YPR.x)
-        self.select_yawX.append(self.select_yawTime-self.startTime)
-        self.select_setpoint_y.append(setpoint_yaw)
-
-
-    def update_kp_slider(self):
-        print "entered"
-        print self.ui.kp_lineEdit.text()
-        self.ui.kp_slider.setValue(self.ui.kp_lineEdit.text())
-    '''
-    def update_ki_slider(self):
-    def update_kd_slider(self):
-    def update_setpoint_slider(self):
-    '''
-
-    def kp(self):
-        if(self.ui.yaw_radioButton.isChecked()):
-            self.msg.kp_yaw = self.ui.kp_slider.value()
-            pub.publish(self.msg)
-            self.ui.kp_lineEdit.setText(str(self.ui.kp_slider.value()))
-        elif(self.ui.pitch_radioButton.isChecked()):
-            self.msg.kp_pitch = self.ui.kp_slider.value()
-            pub.publish(self.msg)
-            self.ui.kp_lineEdit.setText(str(self.ui.kp_slider.value()))
-        elif(self.ui.depth_radioButton.isChecked()):
-            self.msg.kp_depth = self.ui.kp_slider.value()
-            pub.publish(self.msg)
-            self.ui.kp_lineEdit.setText(str(self.ui.kp_slider.value()))
-        elif(self.ui.forward_radioButton.isChecked()):
-            self.msg.kp_forward = self.ui.kp_slider.value()
-            pub.publish(self.msg)
-            self.ui.kp_lineEdit.setText(str(self.ui.kp_slider.value()))
-    def ki(self):
-        if(self.ui.yaw_radioButton.isChecked()):
-            self.msg.ki_yaw = self.ui.ki_slider.value()
-            pub.publish(self.msg)
-            self.ui.ki_lineEdit.setText(str(self.ui.ki_slider.value()))
-        elif(self.ui.pitch_radioButton.isChecked()):
-            self.msg.ki_pitch = self.ui.ki_slider.value()
-            pub.publish(self.msg)
-            self.ui.ki_lineEdit.setText(str(self.ui.ki_slider.value()))
-        elif(self.ui.depth_radioButton.isChecked()):
-            self.msg.ki_depth = self.ui.ki_slider.value()
-            pub.publish(self.msg)
-            self.ui.ki_lineEdit.setText(str(self.ui.ki_slider.value()))
-        elif(self.ui.forward_radioButton.isChecked()):
-            self.msg.ki_forward = self.ui.ki_slider.value()
-            pub.publish(self.msg)
-            self.ui.ki_lineEdit.setText(str(self.ui.ki_slider.value()))
-    def kd(self):
-        if(self.ui.yaw_radioButton.isChecked()):
-            self.msg.kd_yaw = self.ui.kd_slider.value()
-            pub.publish(self.msg)
-            self.ui.kd_lineEdit.setText(str(self.ui.kd_slider.value()))
-        elif(self.ui.pitch_radioButton.isChecked()):
-            self.msg.kd_pitch = self.ui.kd_slider.value()
-            pub.publish(self.msg)
-            self.ui.kd_lineEdit.setText(str(self.ui.kd_slider.value()))
-        elif(self.ui.depth_radioButton.isChecked()):
-            self.msg.kd_depth = self.ui.kd_slider.value()
-            pub.publish(self.msg)
-            self.ui.kd_lineEdit.setText(str(self.ui.kd_slider.value()))
-        elif(self.ui.forward_radioButton.isChecked()):
-            self.msg.kd_forward = self.ui.kd_slider.value()
-            pub.publish(self.msg)
-            self.ui.kd_lineEdit.setText(str(self.ui.kd_slider.value()))
-    def setpoint(self):
-        if(self.ui.yaw_radioButton.isChecked()):
-            global setpoint_yaw
-            self.msg.setpoint_yaw = self.ui.setpoint_slider.value()
-            pub.publish(self.msg)
-            setpoint_yaw = self.msg.setpoint_yaw
-            self.ui.setpoint_lineEdit.setText(str(self.ui.setpoint_slider.value()))
-        elif(self.ui.pitch_radioButton.isChecked()):
-            global setpoint_pitch
-            self.msg.setpoint_pitch = self.ui.setpoint_slider.value()
-            pub.publish(self.msg)
-            setpoint_pitch = self.msg.setpoint_pitch
-            self.ui.setpoint_lineEdit.setText(str(self.ui.setpoint_slider.value()))
-        elif(self.ui.depth_radioButton.isChecked()):
-            global setpoint_depth
-            self.msg.setpoint_depth = self.ui.setpoint_slider.value()
-            pub.publish(self.msg)
-            setpoint_depth = self.msg.setpoint_depth
-            self.ui.setpoint_lineEdit.setText(str(self.ui.setpoint_slider.value()))
-        elif(self.ui.forward_radioButton.isChecked()):
-            global setpoint_forward
-            self.msg.setpoint_forward = self.ui.setpoint_slider.value()
-            pub.publish(self.msg)
-            setpoint_forward = self.msg.setpoint_forward
-            self.ui.setpoint_lineEdit.setText(str(self.ui.setpoint_slider.value()))
     
+
     def update(self):
         #update speed
         global frontpitchspeed_val
         global backpitchspeed_val
         global sideleftspeed_val
         global siderightspeed_val
+        global setpoint_yaw
+        global setpoint_pitch
+        global setpoint_depth
+        global setpoint_forward
+        global val_yaw
+        global val_pitch
+        global val_depth
+        global val_forward
+        
         self.ui.speed_up_lineEdit.setText(str(frontpitchspeed_val))
         self.ui.speed_down_lineEdit.setText(str(backpitchspeed_val))
         self.ui.speed_left_lineEdit.setText(str(sideleftspeed_val))
         self.ui.speed_right_lineEdit.setText(str(siderightspeed_val))
-        #update sliders,lineEdit according to radio button
-        if(self.ui.yaw_radioButton.isChecked()):
-            self.ui.kp_lineEdit.setText(str(self.msg.kp_yaw))
-            self.ui.ki_lineEdit.setText(str(self.msg.ki_yaw))
-            self.ui.kd_lineEdit.setText(str(self.msg.kd_yaw))
-            self.ui.setpoint_lineEdit.setText(str(self.msg.setpoint_yaw))
-            self.ui.kp_slider.setValue(self.msg.kp_yaw)
-            self.ui.ki_slider.setValue(self.msg.ki_yaw)
-            self.ui.kd_slider.setValue(self.msg.kd_yaw)
-            self.ui.setpoint_slider.setValue(self.msg.setpoint_yaw)
-            self.ui.setpoint_slider.setRange(-180,180)
-        elif(self.ui.pitch_radioButton.isChecked()):
-            self.ui.kp_lineEdit.setText(str(self.msg.kp_pitch))
-            self.ui.ki_lineEdit.setText(str(self.msg.ki_pitch))
-            self.ui.kd_lineEdit.setText(str(self.msg.kd_pitch))
-            self.ui.setpoint_lineEdit.setText(str(self.msg.setpoint_pitch))
-            self.ui.kp_slider.setValue(self.msg.kp_pitch)
-            self.ui.ki_slider.setValue(self.msg.ki_pitch)
-            self.ui.kd_slider.setValue(self.msg.kd_pitch)
-            self.ui.setpoint_slider.setValue(self.msg.setpoint_pitch)
-            self.ui.setpoint_slider.setRange(-90,90)
-        elif(self.ui.depth_radioButton.isChecked()):
-            self.ui.kp_lineEdit.setText(str(self.msg.kp_depth))
-            self.ui.ki_lineEdit.setText(str(self.msg.ki_depth))
-            self.ui.kd_lineEdit.setText(str(self.msg.kd_depth))
-            self.ui.setpoint_lineEdit.setText(str(self.msg.setpoint_depth))
-            self.ui.kp_slider.setValue(self.msg.kp_depth)
-            self.ui.ki_slider.setValue(self.msg.ki_depth)
-            self.ui.kd_slider.setValue(self.msg.kd_depth)
-            self.ui.setpoint_slider.setValue(self.msg.setpoint_depth)
-            self.ui.setpoint_slider.setRange(950,1300)
-        elif(self.ui.forward_radioButton.isChecked()):
-            self.ui.kp_lineEdit.setText(str(self.msg.kp_depth))
-            self.ui.ki_lineEdit.setText(str(self.msg.ki_depth))
-            self.ui.kd_lineEdit.setText(str(self.msg.kd_depth))
-            self.ui.setpoint_lineEdit.setText(str(self.msg.setpoint_forward))
-            self.ui.kp_slider.setValue(self.msg.kp_forward)
-            self.ui.ki_slider.setValue(self.msg.ki_forward)
-            self.ui.kd_slider.setValue(self.msg.kd_forward)
-            self.ui.setpoint_slider.setValue(self.msg.setpoint_forward)
-            self.ui.setpoint_slider.setRange(0,10)
-        #update table
-        '''
-        self.ui.tableWidget.setItem(0, 0, QtGui.QTableWidgetItem(str(self.msg.kp_yaw)))
-        self.ui.tableWidget.setItem(1, 0, QtGui.QTableWidgetItem(str(self.msg.ki_yaw)))
-        self.ui.tableWidget.setItem(2, 0, QtGui.QTableWidgetItem(str(self.msg.kd_yaw)))
-        self.ui.tableWidget.setItem(3, 0, QtGui.QTableWidgetItem(str(self.msg.setpoint_yaw)))
-        self.ui.tableWidget.setItem(0, 1, QtGui.QTableWidgetItem(str(self.msg.kp_pitch)))
-        self.ui.tableWidget.setItem(1, 1, QtGui.QTableWidgetItem(str(self.msg.ki_pitch)))
-        self.ui.tableWidget.setItem(2, 1, QtGui.QTableWidgetItem(str(self.msg.kd_pitch)))
-        self.ui.tableWidget.setItem(3, 1, QtGui.QTableWidgetItem(str(self.msg.setpoint_pitch)))
-        self.ui.tableWidget.setItem(0, 2, QtGui.QTableWidgetItem(str(self.msg.kp_depth)))
-        self.ui.tableWidget.setItem(1, 2, QtGui.QTableWidgetItem(str(self.msg.ki_depth)))
-        self.ui.tableWidget.setItem(2, 2, QtGui.QTableWidgetItem(str(self.msg.kd_depth)))
-        self.ui.tableWidget.setItem(3, 2, QtGui.QTableWidgetItem(str(self.msg.setpoint_depth)))
-        self.ui.tableWidget.setItem(0, 3, QtGui.QTableWidgetItem(str(self.msg.kp_forward)))
-        self.ui.tableWidget.setItem(1, 3, QtGui.QTableWidgetItem(str(self.msg.ki_forward)))
-        self.ui.tableWidget.setItem(2, 3, QtGui.QTableWidgetItem(str(self.msg.kd_forward)))
-        self.ui.tableWidget.setItem(3, 3, QtGui.QTableWidgetItem(str(self.msg.setpoint_forward)))
-        '''
+
+        self.ui.val_yaw_lineEdit.setText(str(val_yaw))
+        self.ui.val_pitch_lineEdit.setText(str(val_pitch))
+        self.ui.val_depth_lineEdit.setText(str(val_depth))
+        #self.ui.val_forward_lineEdit.setText(str(val_forward))
+
+        self.ui.setpoint_yaw_lineEdit.setText(str(setpoint_yaw))
+        self.ui.setpoint_pitch_lineEdit.setText(str(setpoint_pitch))
+        self.ui.setpoint_depth_lineEdit.setText(str(setpoint_depth))
+        #self.ui.setpoint_forward_lineEdit.setText(str(setpoint_forward))
 
     def speed(self):
         self.sub_front=rospy.Subscriber("frontpitchspeed",UInt16,self.frontcallback)
@@ -344,7 +187,7 @@ class Panel(QtGui.QMainWindow):
         siderightspeed_val = msg.data
 
     def graph(self):
-        rospy.Subscriber('depth_value',Float64,self.depthCallback)
+        rospy.Subscriber('/depth_value',Float64,self.depthCallback)
         rospy.Subscriber("/tiburon/ins_data",ins_data,self.pitchCallback)
         rospy.Subscriber("/tiburon/ins_data",ins_data,self.yawCallback)
         #rospy.Subscriber("/tiburon/true_velocity",Vector3,self.forwardCallback) #TODO WRITE THE CORRECT TOPIC TYPE        
@@ -352,7 +195,7 @@ class Panel(QtGui.QMainWindow):
         self.startTime = self.startTimeNow.secs + 10**-9*self.startTimeNow.nsecs
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(self.play)
-        self._timer.start(50) #calls play_d ever 50 ms
+        self._timer.start(200) #calls play_d ever 50 ms
 
     def play(self):
         self.update()
@@ -375,27 +218,33 @@ class Panel(QtGui.QMainWindow):
 
     def depthCallback(self,msg):
         global setpoint_depth
+        global val_depth
         self.depthTimeNow = rospy.get_rostime()
         self.depthTime = self.depthTimeNow.secs + 10**-9*self.depthTimeNow.nsecs
         self.depthY.append(msg.data)
         self.depthX.append(self.depthTime-self.startTime)
         self.setpoint_d.append(setpoint_depth)
+        val_depth = msg.data
             
     def pitchCallback(self,msg):
         global setpoint_pitch
+        global val_pitch
         self.pitchTimeNow = rospy.get_rostime()
         self.pitchTime = self.pitchTimeNow.secs + 10**-9*self.pitchTimeNow.nsecs
         self.pitchY.append(msg.YPR.y)
         self.pitchX.append(self.pitchTime-self.startTime)
         self.setpoint_p.append(setpoint_pitch)
-              
+        val_pitch =  msg.YPR.y     
+
     def yawCallback(self,msg):
         global setpoint_yaw
+        global val_yaw
         self.yawTimeNow = rospy.get_rostime()
         self.yawTime = self.yawTimeNow.secs + 10**-9*self.yawTimeNow.nsecs
         self.yawY.append(msg.YPR.x)
         self.yawX.append(self.yawTime-self.startTime)
         self.setpoint_y.append(setpoint_yaw)
+        val_yaw = msg.YPR.x
 
     def forwardCallback(self,msg):
         global setpoint_forward
@@ -404,6 +253,8 @@ class Panel(QtGui.QMainWindow):
         self.forwardY.append(msg.x) #TODO CHANGE PARAMETER ACCORDING TO TOPIC!!!!
         self.forwardX.append(self.forwardTime-self.startTime)
         self.setpoint_f.append(setpoint_forward)
+        val_forward = msg.x 
+        
 
 def main():
     rospy.init_node("tabs_ui_code")

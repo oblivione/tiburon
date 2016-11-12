@@ -25,8 +25,8 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
    {
      ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
    }
-   imageReceived=true; 
-   
+   imageReceived=true;
+
 }
 
 void hsvCallback(const tiburon::hsv_data::ConstPtr& hsv)
@@ -46,12 +46,12 @@ int main(int argc, char** argv)
   image_transport::ImageTransport it(nh);
   image_transport::Subscriber imageSub = it.subscribe("auv_cam1",1,imageCallback);
   image_transport::Publisher segPub = it.advertise("bottomCameraSegmented", 1);
-  ros::Subscriber hsvData = nh.subscribe("/tiburon/hsv_data",1,hsvCallback);
+  ros::Subscriber hsvData = nh.subscribe("/hsv_data",1,hsvCallback);
   sensor_msgs::ImagePtr msg;
   while(1)
   {
     if(imageReceived)
-    { 
+    {
       //imshow("Inp",inp);
       //waitKey(2);
       cvtColor(inp,inp,CV_BGR2HSV);

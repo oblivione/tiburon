@@ -152,6 +152,9 @@ target_link_libraries(thruster_controller ${catkin_LIBRARIES})
 add_executable(velocity_node src/true_vel.cpp)
 target_link_libraries(velocity_node ${catkin_LIBRARIES})
 
+add_executable(hsvSegmenter src/hsvSegmentation.cpp)
+target_link_libraries(hsvSegmenter ${catkin_LIBRARIES})
+
 add_executable(segmentationNode src/segmentationNode.cpp)
 target_link_libraries(segmentationNode ${catkin_LIBRARIES})
 

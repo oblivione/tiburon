@@ -351,7 +351,7 @@ void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg)
    try
    {
      origGr = (cv_bridge::toCvShare(msg, "mono8")->image).clone(); // Don't remove this clone call, else it will not finish copying the whole image and overwrite it prematurely
-     
+
      //waitKey(100);
    }
    catch (cv_bridge::Exception& e)

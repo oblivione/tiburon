@@ -18,14 +18,15 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
    try
    {
-     inp = cv_bridge::toCvShare(msg, "bgr8")->image;
+     inp = (cv_bridge::toCvShare(msg, "bgr8")->image).clone(); // Don't remove this clone call, else it will not finish copying the whole image and overwrite it prematurely
      //imshow("Img",cv_bridge::toCvShare(msg, "bgr8")->image );
    }
    catch (cv_bridge::Exception& e)
    {
      ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
    }
-   imageReceived=true;
+   imageReceived=true; 
+   
 }
 
 void hsvCallback(const tiburon::hsv_data::ConstPtr& hsv)
@@ -50,9 +51,11 @@ int main(int argc, char** argv)
   while(1)
   {
     if(imageReceived)
-    {
+    { 
       //imshow("Inp",inp);
+      //waitKey(2);
       cvtColor(inp,inp,CV_BGR2HSV);
+     // cout << inp << endl;
       inRange(inp,Scalar(hl,sl,vl),Scalar(hh,sh,vh),out);
       //cout<<"here"<<out.channels()<<endl;
       msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", out).toImageMsg();

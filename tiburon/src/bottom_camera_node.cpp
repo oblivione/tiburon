@@ -79,7 +79,7 @@ int main(int argc, char **argv)
         if(!segmentedImageReceived)
             continue;
         cout<<"NC"<<endl;
-        imshow("gr",origGr.clone());
+        imshow("gr",origGr);
         Point botcenter = Point(origGr.cols/2,origGr.rows/2);
         Size imsize = origGr.size();
         //waitKey(0);
@@ -350,7 +350,8 @@ void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg)
     //cout<<"seg"<<endl;
    try
    {
-     origGr = cv_bridge::toCvShare(msg, "mono8")->image;
+     origGr = (cv_bridge::toCvShare(msg, "mono8")->image).clone(); // Don't remove this clone call, else it will not finish copying the whole image and overwrite it prematurely
+     
      //waitKey(100);
    }
    catch (cv_bridge::Exception& e)
@@ -372,4 +373,4 @@ void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg)
 //      ROS_ERROR("Could not convert from '%s' to 'bgr8'.", msg->encoding.c_str());
 //    }
 //    origImageReceived = true;
-// }
+//}

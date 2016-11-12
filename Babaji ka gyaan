@@ -38,5 +38,9 @@ Add # to comment line:
 Add a new line:
 action=/sbin/poweroff
 Save file. Open a console and type:
-sudo acpid restart
+sudo acpid restart 
+
+6. If Pololu Servo controller not working, check if device is working in "USB Dual Port"
+mode. It will not work with the current code in any other mode. To change the device mode,
+use the UI provided by Pololu.
 

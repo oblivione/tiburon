@@ -19,6 +19,7 @@ actionlib_msgs
 cv_bridge
 #opencv2
 sensor_msgs
+image_transport
 )
 
 
@@ -64,6 +65,7 @@ sensor_msgs
    auvcontrol.msg
    delta_velocity_data.msg
    pid.msg
+   hsv_data.msg
  )
 
 ## Generate services in the 'srv' folder
@@ -142,6 +144,7 @@ ${catkin_LIBRARIES}
 vncp_services
 vn100
 )
+
 add_executable(thruster_controller src/thruster_controller.cpp)
 target_link_libraries(thruster_controller ${catkin_LIBRARIES})
 
@@ -149,6 +152,11 @@ target_link_libraries(thruster_controller ${catkin_LIBRARIES})
 add_executable(velocity_node src/true_vel.cpp)
 target_link_libraries(velocity_node ${catkin_LIBRARIES})
 
+add_executable(segmentationNode src/segmentationNode.cpp)
+target_link_libraries(segmentationNode ${catkin_LIBRARIES})
+
+add_executable(bottom_camera_node src/bottom_camera_node.cpp)
+target_link_libraries(bottom_camera_node ${catkin_LIBRARIES})
 
 #add_executable(rviz src/pub_rviz.cpp)
 #target_link_libraries(rviz ${catkin_LIBRARIES})

@@ -9,6 +9,7 @@
 #include <sensor_msgs/image_encodings.h>
 #include <geometry_msgs/Vector3.h>
 #include <tiburon/ins_data.h>
+#include <ctime>
 
 using namespace std;
 using namespace cv;
@@ -42,6 +43,8 @@ void insCallback(const tiburon::ins_data::ConstPtr& ypr);
 
 double globalYaw = 133.0;
 double currentYaw = 0.0; // #Todo Remove this
+double yawUndeadband = 2.5;
+double speedfactor = 4.0;
 
 Mat orig,disp;
 Mat origGr;
@@ -74,22 +77,17 @@ int main(int argc, char **argv)
     std_msgs::Float64 f64msg;
     while(1)
     {
-        //cout<<"Enter"<<endl;
         ros::spinOnce();
         if(!segmentedImageReceived)
             continue;
-        cout<<"NC"<<endl;
-        imshow("gr",origGr);
+        //imshow("gr",origGr);
         Point botcenter = Point(origGr.cols/2,origGr.rows/2);
         Size imsize = origGr.size();
-        //waitKey(0);
         double imdiag = abs_distance(Point2i(0,0),Point2i(origGr.cols,origGr.rows));
         disp = Mat::zeros(imsize, CV_8UC3);
         char arr[50];
-        //sprintf(arr,"/home/codestation/garbage/%d.bmp",rand()%20);
-        //cout<<arr<<endl;
         //imwrite(arr,origGr);
-        Point target = Point(1,0);
+        Point target = Point(0,0);
         double yawTarget=globalYaw,speedTarget=0.0,speednormalized = 0.0;
         bool statusflag = LINENOTFOUND;
         int targetStatus =  findTargetPoint(origGr,target);
@@ -111,7 +109,6 @@ int main(int argc, char **argv)
         }
         else if(targetStatus == OUTER)
         {
-            // TODO: why y component
             // Set yaw=currentyaw, speed = y component of distance, open loop =0, line not found flag = 0
             yawTarget = 90;
             speedTarget = abs(target.y-botcenter.y);
@@ -122,46 +119,57 @@ int main(int argc, char **argv)
             // Set yaw=currentyaw, speed = y component of distance, open loop =0, line not found flag = 0
             yawTarget = getTargetYaw(largestContour);
             cout << "yawtarget" <<  yawTarget << endl;
-            // #Todo if yaw is out of limit ->  speed = 0 else speed = f(|yaw|)*basespeed
             statusflag = ANGLEPID;
         }
         speednormalized = speedTarget/imdiag;
-        // TODO: are the next few lines okay?
         // All the angles are with respect to the x axis has to be converted to y axis
         double yawYaxis = 90 - yawTarget;
         // Set the final yaw angle - final yaw will be atan2 of currentyaw+yawTarget
         double setFinalYaw = currentYaw+yawYaxis;
         setFinalYaw = atan2(sin(setFinalYaw*3.1415/180.0),cos(setFinalYaw*3.1415/180.0))*180.0/3.1415;
-        //# TODO - set the speed - which will be some factor of speednormalized
         // Publish values
         if(targetStatus == MOVETOCENTER)
         {
-            if(abs(currentYaw-setFinalYaw)>2.5) // TODO what should be angle?
+            // have to check for consistency in value of setfinalyaw before executing openloop control
+            while(abs(currentYaw-setFinalYaw)>yawUndeadband)
             {
-                f64msg.data= 0;
+                f64msg.data= 0.0;
                 velPub.publish(f64msg);
                 f64msg.data = setFinalYaw;
                 yawPub.publish(f64msg);
-                // ros::spinOnce();
+                ros::spinOnce();
             }
-            // TODO: what to do about forward?
+            f64msg.data = speednormalized*4.0;
+            velPub.publish(f64msg);
+            double timenow = clock();
+            while((clock()-timenow)/CLOCKS_PER_SEC<3)
+               velPub.publish(f64msg);
         }
         else if(targetStatus == USELESS)
         {
             f64msg.data = 0.0;
             velPub.publish(f64msg);
-            ros::spinOnce();
         }
         else if(targetStatus == OUTER)
         {
-            f64msg.data = speednormalized*4.0;
-            velPub.publish(f64msg); // TODO: should be more I guess
-            ros::spinOnce();
+            f64msg.data = speednormalized*speedfactor;
+            velPub.publish(f64msg);
         }
         else if(targetStatus == INNER)
         {
-            if(abs(currentYaw-setFinalYaw)>1.0) // TODO what should be angle?
+            if(abs(currentYaw-setFinalYaw)>1.0)
             {
+               while(abs(currentYaw-setFinalYaw)>yawUndeadband) // Open Loop Yaw change
+               {
+                  f64msg.data= 0.0;
+                  velPub.publish(f64msg);
+                  f64msg.data = setFinalYaw;
+                  yawPub.publish(f64msg);
+                  ros::spinOnce();
+               }
+               // Closed loop
+                double speedheuristic = abs(currentYaw-setFinalYaw)/yawUndeadband*90/180*3.1415;
+                f64msg.data = speednormalized*speedfactor*cos(speedheuristic);
                 f64msg.data= 0;
                 velPub.publish(f64msg);
                 f64msg.data = setFinalYaw;
@@ -184,7 +192,6 @@ int main(int argc, char **argv)
 }
 int findTargetPoint(Mat bottomCameraImage,Point &targetPoint) //Pass segmented and noise filtered
 {
-    cout<<"Enter1"<<endl;
     vector<vector<Point> > contours;
     Mat topCrop = bottomCameraImage(Rect(0,0,bottomCameraImage.cols,bottomCameraImage.rows*TOPCROP)); // Crop the top part , TOPCROP % from top corner
     cout<<"size"<<topCrop.size()<<endl;
@@ -220,7 +227,6 @@ int findTargetPoint(Mat bottomCameraImage,Point &targetPoint) //Pass segmented a
         cout << "Apply angle PID "  << endl;
         return INNER;
    }
-   cout<<"Exit1"<<endl;
 }
 double cc_angle(Point vtx,Point p1,Point p2)
 {
@@ -266,7 +272,6 @@ double abs_distance(Point2i p1,Point2i p2)
 }
 int findLargestContour(vector<vector<Point> > contours)
 {
-    cout<<"Enter2"<<endl;
     int areaMax = 0;//segm.rows*segm.cols;
     int maxindex = -1;
     for(int j = 0;j<contours.size();j++)
@@ -277,7 +282,6 @@ int findLargestContour(vector<vector<Point> > contours)
             areaMax = contourArea(contours[j]);
         }
     }
-    cout<<"Exit2"<<endl;
     return maxindex;
 }
 double cc_angle(Point2i vtx,Point2i p2)
@@ -287,7 +291,6 @@ double cc_angle(Point2i vtx,Point2i p2)
 }
 double getTargetYaw(vector<Point> contour)
 {
-    cout<<"Enter3"<<endl;
     double targetyaw;
     vector<Point> approxContour;
     approxPolyDP(contour,approxContour,10,true); // works wonders but this epsilon how much to set? - 10 works wonders
@@ -317,7 +320,6 @@ double getTargetYaw(vector<Point> contour)
        double targetyaw1 = globalYawDecision(angles[0],angles[2]);
        double targetyaw2 = globalYawDecision(angles[1],angles[3]);
        targetyaw = globalYawDecision(targetyaw1,targetyaw2);
-//       cout << targetyaw1 << " " << targetyaw2 << " decision made " << targetyaw <<endl;
     }
     else
     {
@@ -326,17 +328,14 @@ double getTargetYaw(vector<Point> contour)
      // use the closer angle to the globalyaw
     }
     // approxpolydp will always give points in circular pattern so angles will be separated by 2 if sides = 4
-    cout<<"Exit3"<<endl;
    return targetyaw;
 }
 double globalYawDecision(double yaw1,double yaw2) // angles should be in degrees
 {
-    cout<<"Enter4"<<endl;
     double dy1 = yaw1 - globalYaw;
     double dy2 = yaw2 - globalYaw;
     dy1 = atan2(sin(3.1415/180.0*dy1),cos(3.1415/180.0*dy1))*180.0/3.1415;
     dy2 = atan2(sin(3.1415/180.0*dy2),cos(3.1415/180.0*dy2))*180.0/3.1415;
-    cout<<"Exit4"<<endl;
     return (abs(dy1)<abs(dy2))?yaw1:yaw2;
 }
 
@@ -347,12 +346,10 @@ void insCallback(const tiburon::ins_data::ConstPtr& ypr)
 
 void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg)
 {
-    //cout<<"seg"<<endl;
    try
    {
      origGr = (cv_bridge::toCvShare(msg, "mono8")->image).clone(); // Don't remove this clone call, else it will not finish copying the whole image and overwrite it prematurely
 
-     //waitKey(100);
    }
    catch (cv_bridge::Exception& e)
    {

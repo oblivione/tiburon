@@ -55,6 +55,7 @@ def main():
             ret1=ret2=ret3=False
             if(count>=1):
                 ret1, readFrame1 = capture1.read()
+                readFrame1 = cv2.flip(cv2.flip(readFrame1,0),1)
             if(count>=2):
                 ret2, readFrame2 = capture2.read()
             if(count>=3):

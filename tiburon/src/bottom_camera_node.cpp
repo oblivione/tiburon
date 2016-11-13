@@ -42,9 +42,10 @@ void insCallback(const tiburon::ins_data::ConstPtr& ypr);
 #define ANGLEPID 3
 
 double globalYaw = 133.0;
-double currentYaw = 0.0; // #Todo Remove this
+double currentYaw = 100.0; // #Todo Remove this
 double yawUndeadband = 2.5;
 double speedfactor = 4.0;
+double areaLow = 0.0,areaHigh = 0.0;
 
 Mat orig,disp;
 Mat origGr;
@@ -81,14 +82,17 @@ int main(int argc, char **argv)
         if(!segmentedImageReceived)
             continue;
         //imshow("gr",origGr);
+        medianBlur(origGr,origGr,7);
         Point botcenter = Point(origGr.cols/2,origGr.rows/2);
         Size imsize = origGr.size();
         double imdiag = abs_distance(Point2i(0,0),Point2i(origGr.cols,origGr.rows));
+        areaHigh = 33.0*imsize.width*imsize.height*TOPCROP/100.0;
+        areaLow = 5.0*imsize.width*imsize.height*TOPCROP/100.0;
         disp = Mat::zeros(imsize, CV_8UC3);
         char arr[50];
         //imwrite(arr,origGr);
         Point target = Point(0,0);
-        double yawTarget=globalYaw,speedTarget=0.0,speednormalized = 0.0;
+        double yawTarget=0.0,speedTarget=0.0,speednormalized = 0.0;
         bool statusflag = LINENOTFOUND;
         int targetStatus =  findTargetPoint(origGr,target);
 
@@ -104,13 +108,15 @@ int main(int argc, char **argv)
         {
             // set line not found =1
             speedTarget = 0.0;
-            yawTarget = 90;
+            yawTarget = 90.0;
+         //   yawTarget = 0.0;
             statusflag = LINENOTFOUND;
         }
         else if(targetStatus == OUTER)
         {
             // Set yaw=currentyaw, speed = y component of distance, open loop =0, line not found flag = 0
-            yawTarget = 90;
+            yawTarget = 90.0; // currentyaw
+         //   yawTarget = 0.0;
             speedTarget = abs(target.y-botcenter.y);
             statusflag = DISTANCEPID;
         }
@@ -118,19 +124,21 @@ int main(int argc, char **argv)
         {
             // Set yaw=currentyaw, speed = y component of distance, open loop =0, line not found flag = 0
             yawTarget = getTargetYaw(largestContour);
-            cout << "yawtarget" <<  yawTarget << endl;
+      //      cout << "yawtarget" <<  yawTarget << endl;
             statusflag = ANGLEPID;
         }
         speednormalized = speedTarget/imdiag;
         // All the angles are with respect to the x axis has to be converted to y axis
-        double yawYaxis = 90 - yawTarget;
+        //double yawYaxis = 90 - yawTarget;
+       // double yawYaxis = yawTarget;
         // Set the final yaw angle - final yaw will be atan2 of currentyaw+yawTarget
-        double setFinalYaw = currentYaw+yawYaxis;
+        double setFinalYaw = 90.0+currentYaw-yawTarget;
         setFinalYaw = atan2(sin(setFinalYaw*3.1415/180.0),cos(setFinalYaw*3.1415/180.0))*180.0/3.1415;
         // Publish values
         if(targetStatus == MOVETOCENTER)
         {
             // have to check for consistency in value of setfinalyaw before executing openloop control
+            //if(abs(currentYaw-setFinalYaw)>yawUndeadband)
             while(abs(currentYaw-setFinalYaw)>yawUndeadband)
             {
                 f64msg.data= 0.0;
@@ -159,6 +167,8 @@ int main(int argc, char **argv)
         {
             if(abs(currentYaw-setFinalYaw)>1.0)
             {
+               //if(abs(currentYaw-setFinalYaw)>yawUndeadband) // Open Loop Yaw change
+
                while(abs(currentYaw-setFinalYaw)>yawUndeadband) // Open Loop Yaw change
                {
                   f64msg.data= 0.0;
@@ -194,17 +204,15 @@ int findTargetPoint(Mat bottomCameraImage,Point &targetPoint) //Pass segmented a
 {
     vector<vector<Point> > contours;
     Mat topCrop = bottomCameraImage(Rect(0,0,bottomCameraImage.cols,bottomCameraImage.rows*TOPCROP)); // Crop the top part , TOPCROP % from top corner
-    cout<<"size"<<topCrop.size()<<endl;
     findContours(topCrop.clone(),contours,CV_RETR_TREE,CV_CHAIN_APPROX_NONE);
-    //waitKey(0);
     int largest = findLargestContour(contours);
     if(largest == -1)
     {
-        cout << "No line found" << endl;
-
+        cout << "Move none" << endl;
         return USELESS;
     }
-    drawContours(disp,contours,largest,Scalar(0,0,255),3);
+    drawContours(disp,contours,largest,Scalar(255,255,255),-1);
+
     circle(disp,Point(bottomCameraImage.cols/2,bottomCameraImage.rows/2),7,Scalar(255,255,0),-1);
     Point centerOfLine = findCenter(contours[largest]);
     largestContour = contours[largest];
@@ -214,17 +222,17 @@ int findTargetPoint(Mat bottomCameraImage,Point &targetPoint) //Pass segmented a
     {
 
        targetPoint = centerOfLine;
-       cout << "Move to center";
+       cout << "Move center" << endl;
        return MOVETOCENTER;
     }
     else if(botToLineDistance > bottomCameraImage.cols*INNERCIRCLE)
     {
-        cout << "Apply distance PID " << endl;
+        cout << "Move forward " << endl;
         return OUTER;
    }
    else
    {
-        cout << "Apply angle PID "  << endl;
+        cout << "Move angle "  << endl;
         return INNER;
    }
 }
@@ -276,10 +284,17 @@ int findLargestContour(vector<vector<Point> > contours)
     int maxindex = -1;
     for(int j = 0;j<contours.size();j++)
     {
-        if(areaMax < contourArea(contours[j]))
+        double currarea =  contourArea(contours[j]);
+        cout << currarea << " "<<areaLow << " " << areaHigh << endl;
+        if(currarea < areaLow || currarea > areaHigh) // arealow and areahigh are global
+        {
+              cout << "out of area limits" << endl;
+              continue;
+        }
+        if(areaMax < currarea)
         {
             maxindex = j;
-            areaMax = contourArea(contours[j]);
+            areaMax = currarea;
         }
     }
     return maxindex;
@@ -291,6 +306,9 @@ double cc_angle(Point2i vtx,Point2i p2)
 }
 double getTargetYaw(vector<Point> contour)
 {
+
+    cout << "Enter here " << endl;
+   // cout << contour << endl;
     double targetyaw;
     vector<Point> approxContour;
     approxPolyDP(contour,approxContour,10,true); // works wonders but this epsilon how much to set? - 10 works wonders
@@ -301,9 +319,13 @@ double getTargetYaw(vector<Point> contour)
         iter++;
         approxPolyDP(contour,approxContour,10+iter*2,true);
     }
+    cout << "Exit here" << endl;
     if(approxContour.size()!=4)
         return USELESS; // have to check in the function call
     double diffangle;
+    vector<vector<Point> > polys;
+    polys.push_back(approxContour);
+    drawContours(disp,polys,0,Scalar(0,0,255),2);
     for(int i= 0;i<approxContour.size();i++)
     {
        if(i==approxContour.size()-1)
@@ -311,7 +333,7 @@ double getTargetYaw(vector<Point> contour)
        else
             diffangle = cc_angle(approxContour[i],approxContour[i+1]);
        angles.push_back(diffangle*180/3.1415);
-       cout << "a " << angles[i] << endl;
+     cout << "a " << angles[i] << endl;
     }
     double angleset1 = abs(angles[0]-angles[2]),angleset2 = abs(angles[1]-angles[3]);
     if(abs(angleset1-180.0)<15 && abs(angleset2-180.0)<15)
@@ -323,8 +345,13 @@ double getTargetYaw(vector<Point> contour)
     }
     else
     {
-        targetyaw=(abs(angleset1-180)<abs(angleset2-180))?((angles[0]+180.0-angles[2])/2):((angles[1]+180.0-angles[2])/2);
-        targetyaw=globalYawDecision(targetyaw,180-targetyaw);
+        //targetyaw=(abs(angleset1-180)<abs(angleset2-180))?((angles[0]+180.0-angles[2])/):((angles[1]+180.0-angles[2])/2);
+        targetyaw=(abs(angleset1-180)<abs(angleset2-180))?angles[0]:angles[1]; // TODO: do the averaging properly
+        if(targetyaw<=0.0)
+            targetyaw=globalYawDecision(targetyaw,180+targetyaw);
+         else
+            targetyaw=globalYawDecision(targetyaw,targetyaw-180);
+
      // use the closer angle to the globalyaw
     }
     // approxpolydp will always give points in circular pattern so angles will be separated by 2 if sides = 4
@@ -332,10 +359,12 @@ double getTargetYaw(vector<Point> contour)
 }
 double globalYawDecision(double yaw1,double yaw2) // angles should be in degrees
 {
-    double dy1 = yaw1 - globalYaw;
-    double dy2 = yaw2 - globalYaw;
+    double globalangle = currentYaw-globalYaw+90;
+    double dy1 = yaw1 - globalangle;
+    double dy2 = yaw2 - globalangle;
     dy1 = atan2(sin(3.1415/180.0*dy1),cos(3.1415/180.0*dy1))*180.0/3.1415;
     dy2 = atan2(sin(3.1415/180.0*dy2),cos(3.1415/180.0*dy2))*180.0/3.1415;
+cout<<"Select: "<<yaw1<<" "<<yaw2<< ((abs(dy1)<abs(dy2))?yaw1:yaw2)<<endl;
     return (abs(dy1)<abs(dy2))?yaw1:yaw2;
 }
 

@@ -7,6 +7,7 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
+#include <std_msgs/UInt16.h>
 #include <geometry_msgs/Vector3.h>
 #include <tiburon/ins_data.h>
 #include <ctime>
@@ -25,6 +26,7 @@ double globalYawDecision(double yaw1,double yaw2);
 void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg);
 //void origImageCallback(const sensor_msgs::ImageConstPtr& msg);
 void insCallback(const tiburon::ins_data::ConstPtr& ypr);
+void stopCallback(const std_msgs::UInt16::ConstPtr& stopf);
 
 
 #define USELESS -1
@@ -52,6 +54,7 @@ Mat origGr;
 vector<Point> largestContour;
 
 bool origImageReceived = false, segmentedImageReceived = false;
+int stopflag = 0;
 
 // #Notes - Three outputs are possible - Angle PID - Will have 2 subparts - Small and Big angle
 //                                      Distance PID - Line is between outer and inner circle
@@ -74,6 +77,7 @@ int main(int argc, char **argv)
     ros::Subscriber ins = nh.subscribe("/tiburon/ins_data",1,insCallback);
     ros::Publisher yawPub = nh.advertise<std_msgs::Float64>("/yawSP",1);
     ros::Publisher velPub = nh.advertise<std_msgs::Float64>("/velSP",1);
+    ros::Subscriber stopflag = nh.subscribe("/stopflag",1,stopCallback);
     sensor_msgs::ImagePtr msg;
     std_msgs::Float64 f64msg;
     while(1)
@@ -139,42 +143,58 @@ int main(int argc, char **argv)
         {
             // have to check for consistency in value of setfinalyaw before executing openloop control
             //if(abs(currentYaw-setFinalYaw)>yawUndeadband)
-            while(abs(currentYaw-setFinalYaw)>yawUndeadband)
+            double timenow = clock();
+            if(stopflag)
+            {
+                f64msg.data= 0.0;
+                velPub.publish(f64msg);
+                f64msg.data = setFinalYaw;
+                yawPub.publish(f64msg);
+             }
+            while(abs(currentYaw-setFinalYaw)>yawUndeadband && !stopflag)
             {
                 f64msg.data= 0.0;
                 velPub.publish(f64msg);
                 f64msg.data = setFinalYaw;
                 yawPub.publish(f64msg);
                 ros::spinOnce();
+                if((clock()-timenow)/CLOCKS_PER_SEC>0.5)
+                  break;
             }
-            f64msg.data = speednormalized*4.0;
+            f64msg.data = speednormalized*speedfactor;
             velPub.publish(f64msg);
-            double timenow = clock();
-            while((clock()-timenow)/CLOCKS_PER_SEC<3)
+            timenow = clock();
+            while((clock()-timenow)/CLOCKS_PER_SEC<2)
                velPub.publish(f64msg);
         }
         else if(targetStatus == USELESS)
         {
             f64msg.data = 0.0;
             velPub.publish(f64msg);
+            f64msg.data = setFinalYaw;
+            yawPub.publish(f64msg);
         }
         else if(targetStatus == OUTER)
         {
             f64msg.data = speednormalized*speedfactor;
             velPub.publish(f64msg);
+            f64msg.data = setFinalYaw;
+            yawPub.publish(f64msg);
         }
         else if(targetStatus == INNER)
         {
             if(abs(currentYaw-setFinalYaw)>1.0)
             {
                //if(abs(currentYaw-setFinalYaw)>yawUndeadband) // Open Loop Yaw change
-
-               while(abs(currentYaw-setFinalYaw)>yawUndeadband) // Open Loop Yaw change
+               double timenow = clock();
+               while(abs(currentYaw-setFinalYaw)>yawUndeadband && !stopflag) // Open Loop Yaw change
                {
                   f64msg.data= 0.0;
                   velPub.publish(f64msg);
                   f64msg.data = setFinalYaw;
                   yawPub.publish(f64msg);
+                  if((clock()-timenow)/CLOCKS_PER_SEC>0.5)
+                    break;
                   ros::spinOnce();
                }
                // Closed loop
@@ -371,6 +391,10 @@ cout<<"Select: "<<yaw1<<" "<<yaw2<< ((abs(dy1)<abs(dy2))?yaw1:yaw2)<<endl;
 void insCallback(const tiburon::ins_data::ConstPtr& ypr)
 {
     currentYaw = ypr->YPR.x;
+}
+void stopCallback(const std_msgs::UInt16::ConstPtr& stopf)
+{
+   stopflag = stopf->data;
 }
 
 void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg)

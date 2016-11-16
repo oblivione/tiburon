@@ -56,7 +56,9 @@ int main(int argc, char** argv)
       //waitKey(2);
       cvtColor(inp,inp,CV_BGR2HSV);
      // cout << inp << endl;
+
       inRange(inp,Scalar(hl,sl,vl),Scalar(hh,sh,vh),out);
+      dilate(out,out,getStructuringElement(MORPH_RECT,Size(7,7)));
       //cout<<"here"<<out.channels()<<endl;
       msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", out).toImageMsg();
       segPub.publish(msg);

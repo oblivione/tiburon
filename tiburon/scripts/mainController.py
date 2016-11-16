@@ -87,17 +87,17 @@ def callback(config,level):
         forwardController.IError = 0.00
     return config
 
-depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback)
-insDataSub=rospy.Subscriber("/tiburon/ins_data",ins_data,insCallback)
-deltaVelSub=rospy.Subscriber("/tiburon/true_velocity",Vector3,velCallback)
+depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback,queue_size=1)
+insDataSub=rospy.Subscriber("/tiburon/ins_data",ins_data,insCallback,queue_size=1)
+deltaVelSub=rospy.Subscriber("/tiburon/true_velocity",Vector3,velCallback,queue_size=1)
 frontPitchPub=rospy.Publisher("frontpitchspeed",UInt16,queue_size=1)
 backPitchPub=rospy.Publisher("backpitchspeed",UInt16,queue_size=1)
 sideLeftSpeedPub=rospy.Publisher("/sideleftspeed",UInt16,queue_size=1)
 sideRightSpeedPub=rospy.Publisher("/siderightspeed",UInt16,queue_size=1)
-depthSetpointSub=rospy.Subscriber("/depthSP",UInt16,queue_size=1,depthSPUpdate)
-yawSetpointSub=rospy.Subscriber("/yawSP",Float64,queue_size=1,yawSPUpdate)
-pitchSetpointSub=rospy.Subscriber("/pitchSP",Float64,queue_size=1,pitchSPUpdate)
-velSetpointSub=rospy.Subscriber("/velSP",Float64,queue_size=1,velSPUpdate)
+depthSetpointSub=rospy.Subscriber("/depthSP",UInt16,depthSPUpdate,queue_size=1)
+yawSetpointSub=rospy.Subscriber("/yawSP",Float64,yawSPUpdate,queue_size=1)
+pitchSetpointSub=rospy.Subscriber("/pitchSP",Float64,pitchSPUpdate,queue_size=1)
+velSetpointSub=rospy.Subscriber("/velSP",Float64,velSPUpdate,queue_size=1)
 
 def main():
     global frontPitchPub, backPitchPub, sideLeftSpeedPub, sideRightSpeedPub

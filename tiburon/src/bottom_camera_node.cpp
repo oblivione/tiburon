@@ -54,7 +54,7 @@ Mat origGr;
 vector<Point> largestContour;
 
 bool origImageReceived = false, segmentedImageReceived = false;
-int stopflag = 0;
+int stopflag = 1;
 
 // #Notes - Three outputs are possible - Angle PID - Will have 2 subparts - Small and Big angle
 //                                      Distance PID - Line is between outer and inner circle
@@ -394,7 +394,7 @@ void insCallback(const tiburon::ins_data::ConstPtr& ypr)
 }
 void stopCallback(const std_msgs::UInt16::ConstPtr& stopf)
 {
-   stopflag = stopf->data;
+   stopflag = 1 - stopflag;
 }
 
 void segmentedImageCallback(const sensor_msgs::ImageConstPtr& msg)

@@ -47,10 +47,11 @@ void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
 
 void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    printf("here\n");
     unsigned short target=msg->data*4;
     if(reverseThruster1)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,0,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,6,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to front thruster");
@@ -61,7 +62,7 @@ void backcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster2)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,1,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,7,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to back thruster");
@@ -72,7 +73,7 @@ void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster3)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,2,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,8,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to left thruster");
@@ -83,7 +84,7 @@ void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
     unsigned short target=msg->data*4;
     if(reverseThruster4)
         target=(3000-msg->data)*4;
-    unsigned char command[] = {0x84,3,target & 0x7F,target >> 7 & 0x7F};
+    unsigned char command[] = {0x84,9,target & 0x7F,target >> 7 & 0x7F};
     if(write(fd,command,sizeof(command))==-1)
     {
         ROS_INFO("error writing to right thruster");

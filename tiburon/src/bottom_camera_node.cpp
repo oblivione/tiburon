@@ -176,7 +176,7 @@ int main(int argc, char **argv)
         }
         else if(targetStatus == OUTER)
         {
-            f64msg.data = speednormalized*speedfactor;
+            f64msg.data = 1.5;//speednormalized*speedfactor;
             velPub.publish(f64msg);
             f64msg.data = setFinalYaw;
             yawPub.publish(f64msg);
@@ -200,7 +200,7 @@ int main(int argc, char **argv)
                // Closed loop
                 double speedheuristic = abs(currentYaw-setFinalYaw)/yawUndeadband*90/180*3.1415;
                 f64msg.data = speednormalized*speedfactor*cos(speedheuristic);
-                f64msg.data= 0;
+                f64msg.data= 1.5;
                 velPub.publish(f64msg);
                 f64msg.data = setFinalYaw;
                 yawPub.publish(f64msg);

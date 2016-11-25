@@ -85,6 +85,7 @@ def callback(config,level):
     if forwardController.Ki != config.ki_for:
         forwardController.Ki = config.ki_for/1000.0
         forwardController.IError = 0.00
+    depthController.checkpoint = config.setpoint_depth
     return config
 
 depthDataSub=rospy.Subscriber("/depth_value",Float64,depthCallback,queue_size=1)

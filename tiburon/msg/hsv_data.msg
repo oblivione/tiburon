@@ -1,3 +1,4 @@
+float64 d
 uint16 hl
 uint16 sl
 uint16 vl

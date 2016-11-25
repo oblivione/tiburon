@@ -158,6 +158,9 @@ target_link_libraries(hsvSegmenter ${catkin_LIBRARIES})
 add_executable(segmentationNode src/segmentationNode.cpp)
 target_link_libraries(segmentationNode ${catkin_LIBRARIES})
 
+add_executable(enhancedSegmentation src/segmentationBlur.cpp)
+target_link_libraries(enhancedSegmentation ${catkin_LIBRARIES})
+
 add_executable(bottom_camera_node src/bottom_camera_node.cpp)
 target_link_libraries(bottom_camera_node ${catkin_LIBRARIES})
 

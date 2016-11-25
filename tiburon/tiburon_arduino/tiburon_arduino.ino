@@ -1,11 +1,12 @@
 
+
 /*
 2 MOTHERBOARD_SHORT
  8 BATTERY1_RELAY_ON
- 9 BATTERY2_RELAY_ON
+ 10 BATTERY2_RELAY_ON
  */
 #define thrusterrelay_1 8
-#define thrusterrelay_2 9
+#define thrusterrelay_2 10
 //#define nano_relay 12
 #define motherboard_on 2
 #define ledPin 13

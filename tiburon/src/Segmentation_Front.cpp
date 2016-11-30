@@ -137,17 +137,17 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
 
 
 int main(){
-  
+
  /* VideoCapture cap("/home/shaggy/line_auv/2.avi");
   if(!cap.isOpened()){
-    cout<< "Cannot open the video file" << endl; 
+    cout<< "Cannot open the video file" << endl;
         return -1;
   }*/
 
     ros::init(argc, argv, "SegmentationNode");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber imageSub = it.subscribe("auv_cam1",1,imageCallback);
+    image_transport::Subscriber imageSub = it.subscribe("auv_cam2",1,imageCallback);
     image_transport::Publisher segPub = it.advertise("frontCameraSegmented", 1);
     //ros::Subscriber hsvData = nh.subscribe("/hsv_data",1,hsvCallback);
     sensor_msgs::ImagePtr msg;
@@ -198,7 +198,7 @@ int main(){
         inRange(image_hsv,Scalar(0,sl,vl),Scalar(hl,sh,vh),segmented_1);
         inRange(image_hsv,Scalar(hh,sl,vl),Scalar(180,sh,vh),segmented_2);
         bitwise_or(segmented_2,segmented_1,segmented);
-    
+
 
         imshow("Seg",segmented);
 
@@ -218,9 +218,9 @@ or(int y=0; y<hsv_image.cols; y++){
             else
               hsv_image.at<uchar>(x,y);
           }
-        }*/ 
+        }*/
 
-  
+
 
        /* Mat element = getStructuringElement( morph_elem, Size( 2*morph_size + 1, 2*morph_size+1 ), Point( morph_size, morph_size ) );
 
@@ -235,10 +235,10 @@ or(int y=0; y<hsv_image.cols; y++){
         segPub.publish(msg);
         imageReceived = 0;
 
-            if(waitKey(1) == 27)  
+            if(waitKey(1) == 27)
            {
-                    cout << "esc key is pressed by user" << endl; 
-                    break; 
+                    cout << "esc key is pressed by user" << endl;
+                    break;
            }
 
         }

@@ -256,7 +256,7 @@ bool send_data(tiburon::YPR::Request &req,
 }
 int main(int argc,char** argv)
 {
-	ros::init(argc,argv,"tiburon"); ////initializing ros node
+	ros::init(argc,argv,"vn100_node"); ////initializing ros node
 	ros::NodeHandle n;
 	ros::NodeHandle np("~");        //creating public and private nodehandlers to ha                               ndle ros publish services and private parameters
 	std::string port;

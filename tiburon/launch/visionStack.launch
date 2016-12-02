@@ -1,7 +1,6 @@
 <launch>
-    <node pkg="tiburon" type="capture.py" name="image_capture" args="1 0"/>
-    <node pkg="tiburon" type="segmentationNode" name="SegmentationNode"/>
+    <node pkg="tiburon" type="capture.py" name="image_capture"/>
+    <node pkg="tiburon" type="enhancedSegmentation" name="SegmentationNodeBottom"/>
+    <node pkg="tiburon" type="segmentationFront" name="SegmentationNodeFront"/>
     <node pkg="tiburon" type="bottom_camera_node" name="BottomCameraNode"/>
-    <node pkg="tiburon" type="ipNodeData.py" name="image_show" />
-    <node pkg="tiburon" type="hsvSegmenter" name="hsvSegmenter" />
 </launch>

@@ -7,8 +7,9 @@
 using namespace std;
 using namespace cv;
 
-ros::Publisher hsv;
+ros::Publisher hsv2,hsv1;
 int lowH=25, lowS=30, lowV=0, highH=155, highS=255, highV=255,d=70;
+int lowH1=14, lowS1=30, lowV1=0, highH1=155, highS1=255, highV1=255,d1=70;
 
 
 void sendData( int, void* )
@@ -21,14 +22,27 @@ void sendData( int, void* )
     msg.hh = highH;
     msg.sh = highS;
     msg.vh = highV;
-    hsv.publish(msg);
+    hsv1.publish(msg);
+}
+void sendData1( int, void* )
+{
+    tiburon::hsv_data msg;
+    msg.d = (d1*1.0)/100.0;
+    msg.hl = lowH1;
+    msg.sl = lowS1;
+    msg.vl = lowV1;
+    msg.hh = highH1;
+    msg.sh = highS1;
+    msg.vh = highV1;
+    hsv2.publish(msg);
 }
 
 int main(int argc, char **argv)
 {
     ros::init(argc,argv,"hsvSegmenter");
     ros::NodeHandle nh;
-    hsv = nh.advertise<tiburon::hsv_data>("/hsv_data",1);
+    hsv1 = nh.advertise<tiburon::hsv_data>("/hsv_data_1",1);
+    hsv2 = nh.advertise<tiburon::hsv_data>("/hsv_data_2",1);
     namedWindow("Trackbars",CV_WINDOW_AUTOSIZE);
     createTrackbar("D", "Trackbars", &d, 100, sendData);
     createTrackbar("Low H", "Trackbars", &lowH, 255, sendData);
@@ -37,5 +51,14 @@ int main(int argc, char **argv)
     createTrackbar("High H", "Trackbars", &highH, 255, sendData);
     createTrackbar("High S", "Trackbars", &highS, 255, sendData);
     createTrackbar("High V", "Trackbars", &highV, 255, sendData);
-    waitKey(0);
+    namedWindow("Trackbars1",CV_WINDOW_AUTOSIZE);
+    createTrackbar("D", "Trackbars1", &d1, 100, sendData1);
+    createTrackbar("Low H", "Trackbars1", &lowH1, 255, sendData1);
+    createTrackbar("Low S", "Trackbars1", &lowS1, 255, sendData1);
+    createTrackbar("Low V", "Trackbars1", &lowV1, 255, sendData1);
+    createTrackbar("High H", "Trackbars1", &highH1, 255, sendData1);
+    createTrackbar("High S", "Trackbars1", &highS1, 255, sendData1);
+    createTrackbar("High V", "Trackbars1", &highV1, 255, sendData1);
+    while(1)
+        waitKey(1);
 }

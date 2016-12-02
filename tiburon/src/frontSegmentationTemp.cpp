@@ -308,11 +308,30 @@ cv::Mat find_dominant_colors(cv::Mat img, int count) {
     cv::Mat viewable = get_viewable_image(classes);
   //  cv::Mat dom = get_dominant_palette(colors);
 
-    cv::imwrite("/home/codestation/classification.png", viewable);
-    cv::imwrite("/home/codestation/quantized.png", quantized);
+    cv::imwrite("/home/codestation/classification1.png", viewable);
+    cv::imwrite("/home/codestation/quantized1.png", quantized);
    // cv::imwrite("./palette.png", dom);
 
     return quantized;
+}
+
+Mat rotate(Mat image, int method)
+{
+    if (method <0)
+        transpose(image, image);
+    //if(method == 1)
+    //return image;
+    Mat rotated = Mat(image.rows, image.cols, CV_MAKETYPE(CV_8U, image.channels()));
+    //Vec3b value;
+    //cout << image.size() << " " << rotated.size() <<  endl;
+    flip(image, rotated, 1);
+    /*for (int i = 0; i<rotated.cols; i++)
+    for (int j = 0; j<rotated.rows; j++)
+    rotated.at<Vec3b>(Point(i, j)) = image.at<Vec3b>(Point(image.cols - i - 1, j));*/
+
+    if (method >0)
+        transpose(rotated, rotated);
+    return rotated;
 }
 
 void imageCallback(const sensor_msgs::ImageConstPtr& msg)
@@ -328,6 +347,7 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
    }
    imageReceived=true;
 
+//inp=rotate(inp,-1);
 }
 
 void hsvCallback(const tiburon::hsv_data::ConstPtr& hsv)
@@ -344,12 +364,12 @@ void hsvCallback(const tiburon::hsv_data::ConstPtr& hsv)
 
 int main(int argc, char* argv[])
 {
-    ros::init(argc, argv, "SegmentationNode");
+    ros::init(argc, argv, "SegmentationNodeFront");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber imageSub = it.subscribe("auvBottomCamera",1,imageCallback);
-    image_transport::Publisher segPub = it.advertise("bottomCameraSegmented", 1);
-    ros::Subscriber hsvData = nh.subscribe("/hsv_data_1",1,hsvCallback);
+    image_transport::Subscriber imageSub = it.subscribe("auvLeftCamera",1,imageCallback);
+    image_transport::Publisher segPub = it.advertise("frontCameraSegmented", 1);
+    ros::Subscriber hsvData = nh.subscribe("/hsv_data_2",1,hsvCallback);
     sensor_msgs::ImagePtr msg;
     while(!imageReceived) ros::spinOnce();
     Mat Qimg = find_dominant_colors(inp, 1);

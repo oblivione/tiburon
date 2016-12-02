@@ -44,7 +44,7 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "SegmentationNode");
   ros::NodeHandle nh;
   image_transport::ImageTransport it(nh);
-  image_transport::Subscriber imageSub = it.subscribe("auv_cam1",1,imageCallback);
+  image_transport::Subscriber imageSub = it.subscribe("auvBottomCamera",1,imageCallback);
   image_transport::Publisher segPub = it.advertise("bottomCameraSegmented", 1);
   ros::Subscriber hsvData = nh.subscribe("/hsv_data",1,hsvCallback);
   sensor_msgs::ImagePtr msg;

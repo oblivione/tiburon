@@ -34,11 +34,11 @@ class Video():
         rospy.init_node('image_show', anonymous=True)
         self.cn = camno
         if(camno==1):
-            rospy.Subscriber('auv_cam1', Image, self.captureNextFrame)
+            rospy.Subscriber(sys.argv[1], Image, self.captureNextFrame)
         elif(camno==2):
-            rospy.Subscriber('bottomCameraSegmented', Image, self.captureNextFrame)
+            rospy.Subscriber(sys.argv[2], Image, self.captureNextFrame)
         else:
-            rospy.Subscriber('debugImage',Image,self.captureNextFrame)
+            rospy.Subscriber(sys.argv[3],Image,self.captureNextFrame)
 
     def captureNextFrame(self,data):
         try:

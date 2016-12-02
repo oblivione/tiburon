@@ -16,8 +16,10 @@ servo control by Pololu.
 #else
 #include <termios.h>
 #endif
-int fd;
+
+int fd, sFront = 0, sBack = 0, sLeft = 0, sRight = 0;
 int reverseThruster1 = 0, reverseThruster2 = 0, reverseThruster3 = 0, reverseThruster4 = 0;
+
 void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
 {
         switch(msg->data)
@@ -47,6 +49,7 @@ void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
 
 void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    if(msg->data==1500) sFront = 1;
     printf("here\n");
     unsigned short target=msg->data*4;
     if(reverseThruster1)
@@ -59,6 +62,7 @@ void frontcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void backcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    if(msg->data==1500) sBack = 1;
     unsigned short target=msg->data*4;
     if(reverseThruster2)
         target=(3000-msg->data)*4;
@@ -70,6 +74,7 @@ void backcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    if(msg->data==1500) sLeft = 1;
     unsigned short target=msg->data*4;
     if(reverseThruster3)
         target=(3000-msg->data)*4;
@@ -81,6 +86,7 @@ void leftcallback(const std_msgs::UInt16::ConstPtr& msg)
 }
 void rightcallback(const std_msgs::UInt16::ConstPtr& msg)
 {
+    if(msg->data==1500) sRight = 1;
     unsigned short target=msg->data*4;
     if(reverseThruster4)
         target=(3000-msg->data)*4;
@@ -110,7 +116,9 @@ int main(int argc, char* argv[])
     ros::Subscriber backsub = n.subscribe("backpitchspeed",1,backcallback);
     ros::Subscriber leftsub = n.subscribe("sideleftspeed",1,leftcallback);
     ros::Subscriber rightsub = n.subscribe("siderightspeed",1,rightcallback);
-    ros::Subscriber thrusterReverse = n. subscribe("thrusterreverse",1,reverseCallback);
+    ros::Subscriber thrusterReverse = n.subscribe("thrusterreverse",1,reverseCallback);
+    ros::Publisher statusPub = n.advertise<std_msgs::UInt16>("/controllerStatus",1);
+    std_msgs::UInt16 msg;
     if(argc==1)
     {
         std::cout<<"Oops there appears to be a problem  with the port"<<std::endl;
@@ -133,7 +141,12 @@ int main(int argc, char* argv[])
     options.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
     tcsetattr(fd, TCSANOW, &options);
     #endif
-    ros::spin();
+    while(1)
+    {
+        msg.data = sFront + sBack + sLeft + sRight;
+        statusPub.publish(msg);
+        ros::spinOnce();
+    }
     close(fd);
     return 0;
 }

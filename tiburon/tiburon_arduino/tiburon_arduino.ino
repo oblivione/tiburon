@@ -20,20 +20,16 @@
 ros::NodeHandle  nh;
 
 MS5803 sensor(ADDRESS_HIGH);
-int i=0,j=0,k=0,l=0,ledState = 1;
+int ledState = 1;
 unsigned long prev,current,prevCallbackTime;
 bool connectedTiburon = 0;
-float temperature_c, temperature_f;
-double pressure_abs, pressure_relative, altitude_delta, pressure_baseline;
-float array[4];
-double base_altitude = 1655.0;
-
-int depthSensorOn = 0, prevDepthSensorOn = 0;
+int depthSensorOn = 0, prevDepthSensorOn = 0, globalStatus = 0;
 
 
 void checkConnectionCallback(const std_msgs::UInt16& msg)
 {
   connectedTiburon = 1;
+  globalStatus = 1;
   prevCallbackTime = millis();
 }
 
@@ -49,10 +45,11 @@ void tsCb(const std_msgs::UInt16& msg)
   {
 
   }
-  else if(msg.data==2)
+  else if(msg.data==2 && connectedTiburon)
   {
     digitalWrite(thrusterrelay_1,HIGH);
     digitalWrite(thrusterrelay_2,HIGH);
+    globalStatus = 2;
 
   }
   else if(msg.data==3)
@@ -65,10 +62,13 @@ void tsCb(const std_msgs::UInt16& msg)
 }
 
 std_msgs::Float64 depth_msg;
-ros::Subscriber<std_msgs::UInt16> tstate("thrusterstate",&tsCb);
-ros::Publisher  pub_depth("/depth_value",&depth_msg);
-ros::Subscriber<std_msgs::UInt16> depthSensor("/depthSensorState",&depthSensorCallback );
-ros::Subscriber<std_msgs::UInt16> connectionChecker("/tiburonConnection",&checkConnectionCallback );
+std_msgs::UInt16 uint16_msg;
+ros::Subscriber<std_msgs::UInt16> tstate("thrusterstate",1,&tsCb);
+ros::Publisher  pub_depth("/depth_value",1);
+ros::Subscriber<std_msgs::UInt16> depthSensor("/depthSensorState",1,&depthSensorCallback );
+ros::Subscriber<std_msgs::UInt16> connectionChecker("/tiburonConnection",1,&checkConnectionCallback );
+ros::Publisher statusConnection("/auvStatus",1);
+ros::Publisher underwater("/underwaterStatus",1);
 
 void setup()
 {
@@ -83,6 +83,8 @@ void setup()
   nh.subscribe(depthSensor);
   nh.subscribe(tstate);
   nh.advertise(pub_depth);
+  nh.advertise(statusConnection);
+  nh.advertise(underwater);
   nh.subscribe(connectionChecker);
   // pressure_baseline = sensor.getPressure(ADC_4096);
   digitalWrite(thrusterrelay_1,LOW);
@@ -94,6 +96,10 @@ void setup()
 
 void loop()
 {
+  uint16_msg.data =globalStatus;
+  statusConnection.publish(&uint16_msg);
+  uint16_msg.data = digitalRead(6)*10 + digitalRead(7);
+  underwater.publish(&uint16_msg);
   current = millis();
   if(current-prev>1000)
   {
@@ -103,13 +109,13 @@ void loop()
   }
   if(prevDepthSensorOn == 0 && depthSensorOn == 1)
   {
+    globalStatus = 3;
     sensor.reset();
     sensor.begin();
   }
   if(depthSensorOn == 1)
   {
-    pressure_abs = sensor.getPressure(ADC_4096);
-    depth_msg.data = pressure_abs;
+    depth_msg.data = sensor.getPressure(ADC_4096);
     pub_depth.publish(&depth_msg);
   }
   if(prevDepthSensorOn == 1 && depthSensorOn == 0)

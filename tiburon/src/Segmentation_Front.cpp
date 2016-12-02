@@ -6,13 +6,14 @@
 #include <image_transport/image_transport.h>
 #include <cv_bridge/cv_bridge.h>
 #include <sensor_msgs/image_encodings.h>
-
+#include <tiburon/hsv_data.h>
 using namespace std;
 using namespace cv;
 
 /*------------------global variables----------------------------------*/
 
 int hl=14,sl=30,vl=0,hh=155,sh=255,vh=255;
+//int hl=87,sl=88,vl=39,hh=124,sh=255,vh=255;
 Mat segmented_1,segmented_2,segmented;
 Mat inp;
 bool imageReceived = false;
@@ -132,11 +133,19 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
    imageReceived=true;
 
 }
+void hsvCallback(const tiburon::hsv_data::ConstPtr& hsv)
+{
+    hl = hsv->hl;
+    sl = hsv->sl;
+    vl = hsv->vl;
+    hh = hsv->hh;
+    sh = hsv->sh;
+    vh = hsv->vh;
+}
 
 
 
-
-int main(){
+int main(int argc, char** argv){
 
  /* VideoCapture cap("/home/shaggy/line_auv/2.avi");
   if(!cap.isOpened()){
@@ -144,12 +153,12 @@ int main(){
         return -1;
   }*/
 
-    ros::init(argc, argv, "SegmentationNode");
+    ros::init(argc, argv, "SegmentationNodeFront");
     ros::NodeHandle nh;
     image_transport::ImageTransport it(nh);
-    image_transport::Subscriber imageSub = it.subscribe("auv_cam2",1,imageCallback);
+    image_transport::Subscriber imageSub = it.subscribe("auvLeftCamera",1,imageCallback);
     image_transport::Publisher segPub = it.advertise("frontCameraSegmented", 1);
-    //ros::Subscriber hsvData = nh.subscribe("/hsv_data",1,hsvCallback);
+    ros::Subscriber hsvData = nh.subscribe("/hsv_data_2",1,hsvCallback);
     sensor_msgs::ImagePtr msg;
        while(!imageReceived) ros::spinOnce();
 
@@ -184,7 +193,7 @@ int main(){
         Mat image_hsv;
         Mat image1, image_gray;
 
-        image=rotate(image,-1);
+        //image=rotate(image,-1);
          imshow("Image",image);
         image = white_balance(image,12,1);
         namedWindow("white_balance",CV_WINDOW_NORMAL);
@@ -195,6 +204,7 @@ int main(){
 
         cvtColor(image, image_hsv, COLOR_BGR2HSV);
                //cvtColor(imgH, image_hsv_sat, COLOR_BGR2HSV);
+        //inRange(image_hsv,Scalar(hl,sl,vl),Scalar(hh,sh,vh),segmented);
         inRange(image_hsv,Scalar(0,sl,vl),Scalar(hl,sh,vh),segmented_1);
         inRange(image_hsv,Scalar(hh,sl,vl),Scalar(180,sh,vh),segmented_2);
         bitwise_or(segmented_2,segmented_1,segmented);

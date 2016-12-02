@@ -6,7 +6,7 @@ from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
 
 def main():
-    pub1 = rospy.Publisher('auv_cam1',Image,queue_size=1)
+    pub1 = rospy.Publisher(sys.argv[2],Image,queue_size=1)
     rospy.init_node('videoToTopic',anonymous=True)
     rate = rospy.Rate(60)
     bridge = CvBridge()

@@ -24,7 +24,7 @@ try:
 except AttributeError:
     def _translate(context, text, disambig):
         return QtGui.QApplication.translate(context, text, disambig)
-
+arr = ['auvBottomCamera','auvLeftCamera','auvRightCamera']
 class Video():
     def __init__(self,camno):
         #init subsciber here
@@ -32,16 +32,16 @@ class Video():
         self.currentFrame=np.array([])
         self.fourcc = cv2.cv.CV_FOURCC(*'MJPG')
         rospy.init_node('image_show', anonymous=True)
-        rospy.Subscriber('auv_cam'+str(camno), Image, self.captureNextFrame)
-        
+        rospy.Subscriber(arr[camno-1], Image, self.captureNextFrame)
+
     def captureNextFrame(self,data):
         try:
             self.cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
         except CvBridgeError as e:
             print(e)
         self.currentFrame=cv2.cvtColor(self.cv_image,cv2.COLOR_BGR2RGB)
-        
- 
+
+
     def convertFrame(self):
         try:
             self.currentFrame=cv2.resize(self.currentFrame,(320,240))
@@ -54,11 +54,11 @@ class Video():
             return img
         except:
             return None
-    
+
     def addFrameToVideo(self):
-        self.out.write(self.cv_image)  
-         
- 
+        self.out.write(self.cv_image)
+
+
 class Gui(QtGui.QMainWindow):
     def __init__(self,parent=None):
 	    # Initialize the UI
@@ -85,7 +85,7 @@ class Gui(QtGui.QMainWindow):
 	    # at an interval of msec milliseconds
         self._timer.start(10)
         self.update()
- 
+
     def play(self):
         try:
 	        # videoFrame is a QLabel. See ui.py for better understanding
@@ -118,7 +118,7 @@ class Gui(QtGui.QMainWindow):
             self.ui.recButton1.setText(_translate("MainWindow", "Stop", None))
             self.video1.out = cv2.VideoWriter('AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',self.video1.fourcc, 20.0, (640,480))
             self.isRecording1 = True
-    
+
     def onClicked_recButton2(self):
         # Check if recording is on or not and update accordingly
         if self.isRecording2 == True:
@@ -129,7 +129,7 @@ class Gui(QtGui.QMainWindow):
             self.ui.recButton2.setText(_translate("MainWindow", "Stop", None))
             self.video2.out = cv2.VideoWriter('AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',self.video2.fourcc, 20.0, (640,480))
             self.isRecording2 = True
-            
+
     def onClicked_recButton3(self):
         # Check if recording is on or not and update accordingly
         if self.isRecording3 == True:
@@ -140,14 +140,14 @@ class Gui(QtGui.QMainWindow):
             self.ui.recButton3.setText(_translate("MainWindow", "Stop", None))
             self.video3.out = cv2.VideoWriter('AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',self.video3.fourcc, 20.0, (640,480))
             self.isRecording3 = True
-    
-    
+
+
     def onClicked_capButton1(self):
         cv2.imwrite('AUV_CAP_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.jpg',self.video1.cv_image)
-        
+
     def onClicked_capButton2(self):
         cv2.imwrite('AUV_CAP_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.jpg',self.video2.cv_image)
-        
+
     def onClicked_capButton3(self):
         cv2.imwrite('AUV_CAP_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.jpg',self.video3.cv_image)
 
@@ -156,6 +156,6 @@ def main():
     ex = Gui()
     ex.show()
     sys.exit(app.exec_())
- 
+
 if __name__ == '__main__':
     main()

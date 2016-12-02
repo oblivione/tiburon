@@ -115,20 +115,28 @@ int main(int argc, char **argv)
     std_msgs::Float64 f64msg;
     double setFinalYaw = currentYaw;
     double setFinalSpeed = 0;
-     double yawTargets[3] ={globalYaw,globalYaw,globalYaw};
+    double yawTargets[3] ={globalYaw,globalYaw,globalYaw};
+    //bottomIm = Mat::zeros(Size(640,480),CV_8UC1);
+    double bottomAvg = USELESS,frontAvg = USELESS;
+    double bottomMax = USELESS,frontMax = USELESS;
+    double bottomMin = USELESS,frontMin = USELESS;
+    double bottomframecount = 0,frontframecount = 0;
+    double frontlatchtimer,frontlatchvalue;
     while(1)
     {
       ros::spinOnce();
       if(!bottomImageReceived || !frontImageReceived)
          continue;
+    double bottomAvg = USELESS,frontAvg = USELESS;
 
       medianBlur(frontIm,frontIm,7);
+      dilate(frontIm,frontIm,getStructuringElement(MORPH_RECT,Size(7,7)));
       Point frontcenter = Point(frontIm.cols/2,frontIm.rows/2);
       Size frontimsize = frontIm.size();
    // double imdiag = abs_distance(Point2i(0,0),Point2i(frontIm.cols,frontIm.rows));
-      frontareaLow = 2.0*frontimsize.width*frontimsize.height*FRONTCROP/100.0;
+      frontareaLow = 1.0*frontimsize.width*frontimsize.height*FRONTCROP/100.0;
       frontareaHigh = 40.0*frontimsize.width*frontimsize.height*FRONTCROP/100.0;
-      bottomdisp = Mat::zeros(frontimsize, CV_8UC3);
+      frontdisp = Mat::zeros(frontimsize, CV_8UC3);
 
       medianBlur(bottomIm,bottomIm,7);
       Point bottomcenter = Point(bottomIm.cols/2,bottomIm.rows/2);
@@ -147,13 +155,63 @@ int main(int argc, char **argv)
       yawTargets[0] = bottomcamYaw;
       //Todo - select between object and line
       yawTargets[1] = frontcamLineYaw;
-      //Todo - if bottomcamerayaw value persists - the globalyaw should be updated
+      cout << "Yawtargets array " << yawTargets[0] << "\t" << yawTargets[1] << "\t" << yawTargets[2] << endl;
+            //Todo - if bottomcamerayaw value persists - the globalyaw should be updated
       if(yawTargets[0] != USELESS)
+      {
+            if(bottomframecount == 0)
+            {
+               bottomAvg = yawTargets[0];
+               bottomMax = yawTargets[0];
+               bottomMin = yawTargets[0];
+            }
+            else
+            {
+               bottomAvg = (bottomAvg*(bottomframecount)+yawTargets[0])/(bottomframecount+1); // running avg
+               bottomMin = bottomMin<yawTargets[0]?bottomMin:yawTargets[0];
+               bottomMax = bottomMax>yawTargets[0]?bottomMax:yawTargets[0];
+            }
+           bottomframecount++;
            setFinalYaw = yawTargets[0];
+      }
       else if(yawTargets[1] != USELESS)
+      {
+
+               if(frontframecount == 0)
+               {
+                  frontAvg = yawTargets[1];
+                  frontMax = yawTargets[1];
+                  frontMin = yawTargets[1];
+               }
+               else
+               {
+                  frontAvg = (frontAvg*(bottomframecount)+yawTargets[0])/(frontframecount+1); // running avg
+                  frontMin = frontMin<yawTargets[0]?frontMin:yawTargets[0];
+                  frontMax = frontMax>yawTargets[0]?frontMax:yawTargets[0];
+               }
+            frontframecount++;
            setFinalYaw = yawTargets[1];
+      }
       else
-           setFinalYaw = yawTargets[2];
+      {
+         if(frontframecount>10 && abs(rad2deg(atan2(sin(deg2rad(frontMin-frontMax)),cos(deg2rad(frontMin-frontMax)))))<10.0)
+         {
+            frontlatchtimer = clock();
+            double frontlatchvalue = frontAvg;
+         }
+         if(bottomframecount>10 && abs(rad2deg(atan2(sin(deg2rad(bottomMin - bottomMax)),cos(deg2rad(bottomMin - bottomMax)))))<10.0)
+         {
+            //globalYaw = bottomAvg;
+            yawTargets[2] = bottomAvg;
+         }
+         if((clock()-frontlatchtimer)/CLOCKS_PER_SEC<5.0) // Change the time if needed
+            yawTargets[2] = frontlatchvalue;
+         else
+            yawTargets[2] = globalYaw;
+         setFinalYaw = yawTargets[2];
+         frontframecount=0;
+         bottomframecount=0;
+      }
       //Todo - set velocity heuristic
       setFinalSpeed = 3.0;
 
@@ -170,7 +228,7 @@ int main(int argc, char **argv)
         frontPub.publish(msg);
         msg = cv_bridge::CvImage(std_msgs::Header(), "bgr8", bottomdisp).toImageMsg();
         bottomPub.publish(msg);
-        waitKey(10);
+        waitKey(1);
 
     }
     return 0;
@@ -183,13 +241,13 @@ double getBottomYaw(Mat bottomCameraImage)
     int largest = findLargestContour(contours);
     if(largest == -1)
     {
-        cout << "Move none" << endl;
+        cout << "Bottom nothing detected" << endl;
         return USELESS;
     }
     double currarea = contourArea(contours[largest]);
     if(currarea < bottomareaLow || currarea > bottomareaHigh) // arealow and areahigh are global
     {
-          cout << "out of area limits" << endl;
+          cout << "Bottom out of area limits" << endl;
           return USELESS;
     }
     drawContours(bottomdisp,contours,largest,Scalar(255,255,255),-1);
@@ -263,12 +321,12 @@ double getFrontYaw(Mat segImage)
 {
     vector<vector<Point> > contours;
     // Todo - fix the correct crop size
-    Mat frontCrop = segImage(Rect(0,0,segImage.cols,segImage.rows*FRONTCROP)); // Crop the top part , TOPCROP % from top corner
+    Mat frontCrop = segImage(Rect(0,segImage.rows*0.5,segImage.cols,segImage.rows*0.5)); // Crop the top part , TOPCROP % from top corner
     findContours(frontCrop.clone(),contours,CV_RETR_TREE,CV_CHAIN_APPROX_NONE);
     int largest = findLargestContour(contours);
     if(largest == -1)
     {
-        //cout << "Move none" << endl;
+        cout << "Front nothing detected" << endl;
         return USELESS;
     }
     double currarea = contourArea(contours[largest]);
@@ -277,13 +335,18 @@ double getFrontYaw(Mat segImage)
           cout << "Front out of area limits" << endl;
           return USELESS;
     }
+    drawContours(frontdisp,contours,largest,Scalar(255,255,255),-1);
     double tanthetamax = tan(deg2rad(FRONTCAMFOV/2));
     Point center = findCenter(contours[largest]);
-    int diffx = center.x - frontCrop.cols/2;
-    double tantheta = tanthetamax*diffx/(frontCrop.cols/2);
+    circle(frontdisp,center,3,Scalar(0,0,255),-1);
+    double diffx = center.x - frontCrop.cols/2;
+    cout << "diffx " << diffx  << " frontcropcolsby2 " << frontCrop.cols/2;
+    double tantheta = (tanthetamax*diffx)/(frontCrop.cols/2);
+
     double theta = rad2deg(atan(tantheta));
+    cout<< "thm " << tanthetamax << " th " << theta << " tantheta " << tantheta << endl;
     //Todo check the direction of the theta with yaw
-    double frontYaw = 90.0+theta;
+    double frontYaw = currentYaw+theta;
     return frontYaw;
 }
 double globalYawDecision(double yaw1,double yaw2) // angles should be in degrees
@@ -296,11 +359,11 @@ double globalYawDecision(double yaw1,double yaw2) // angles should be in degrees
     //cout<<"Select: "<<yaw1<<" "<<yaw2<< ((abs(dy1)<abs(dy2))?yaw1:yaw2)<<endl;
     return (abs(dy1)<abs(dy2))?yaw1:yaw2;
 }
-double deg2rad(double radval)
+double rad2deg(double radval)
 {
     return 180.0*radval/3.1415;
 }
-double rad2deg(double degval)
+double deg2rad(double degval)
 {
     return 3.1415*degval/180.0;
 }

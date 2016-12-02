@@ -158,6 +158,9 @@ target_link_libraries(hsvSegmenter ${catkin_LIBRARIES})
 add_executable(segmentationNode src/segmentationNode.cpp)
 target_link_libraries(segmentationNode ${catkin_LIBRARIES})
 
+add_executable(segmentationFront src/frontSegmentationTemp.cpp)
+target_link_libraries(segmentationFront ${catkin_LIBRARIES})
+
 add_executable(enhancedSegmentation src/segmentationBlur.cpp)
 target_link_libraries(enhancedSegmentation ${catkin_LIBRARIES})
 
@@ -228,12 +231,13 @@ add_executable(thruster_joy_exe src/thruster_control_joy.cpp)
 install(FILES
   launch/visionStack.launch
   launch/controlLaunch.launch
+  launch/imageDebug.launch
   # myfile1
   # myfile2
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-############# 
+#############
 ## Testing ##
 #############
 

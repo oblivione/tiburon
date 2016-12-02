@@ -163,7 +163,7 @@ int main(int argc, char** argv){
        while(!imageReceived) ros::spinOnce();
 
 
-  namedWindow("Video",CV_WINDOW_NORMAL);
+  //namedWindow("Video",CV_WINDOW_NORMAL);
   int count1 = 0;
   float h=5;
   int templateWindowSize=7;
@@ -194,10 +194,10 @@ int main(int argc, char** argv){
         Mat image1, image_gray;
 
         //image=rotate(image,-1);
-         imshow("Image",image);
+        // imshow("Image",image);
         image = white_balance(image,12,1);
-        namedWindow("white_balance",CV_WINDOW_NORMAL);
-        imshow("white_balance", image);
+        //namedWindow("white_balance",CV_WINDOW_NORMAL);
+        //imshow("white_balance", image);
 
 
 
@@ -210,7 +210,7 @@ int main(int argc, char** argv){
         bitwise_or(segmented_2,segmented_1,segmented);
 
 
-        imshow("Seg",segmented);
+        //imshow("Seg",segmented);
 
 
       /*  fimshow("Image",image);

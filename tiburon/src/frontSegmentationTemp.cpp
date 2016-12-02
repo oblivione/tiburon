@@ -391,8 +391,8 @@ int main(int argc, char* argv[])
         inRange(image_hsv,Scalar(0,sl,vl),Scalar(hl,sh,vh),segmented_1);
         inRange(image_hsv,Scalar(hh,sl,vl),Scalar(180,sh,vh),segmented_2);
         bitwise_or(segmented_2,segmented_1,segmented);
-        imshow("Image",image);
-        imshow("Seg",segmented);
+        //imshow("Image",image);
+        //imshow("Seg",segmented);
         // vector<Mat>hsv;
         // split(image_hsv, hsv);
         // vector<Mat>hsv_sat;

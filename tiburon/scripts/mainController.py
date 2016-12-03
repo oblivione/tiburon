@@ -180,25 +180,25 @@ def main():
         elif F4<=-vp.thrusterMin*0.7:
             targetRightSpeed = 1480 - (((-F4-vp.thrusterMin*0.7)/vp.thrusterRatioB)**0.5)
 
-        if(targetFrontSpeed>1900):
-            targetFrontSpeed = 1900
-        elif(targetFrontSpeed<1100):
-            targetFrontSpeed = 1100
+        if(targetFrontSpeed>1650):
+            targetFrontSpeed = 1650
+        elif(targetFrontSpeed<1350):
+            targetFrontSpeed = 1350
 
-        if(targetBackSpeed>1900):
-            targetBackSpeed = 1900
-        elif(targetBackSpeed<1100):
-            targetBackSpeed = 1100
+        if(targetBackSpeed>1650):
+            targetBackSpeed = 1650
+        elif(targetBackSpeed<1350):
+            targetBackSpeed = 1350
 
-        if(targetLeftSpeed>1900):
-            targetLeftSpeed = 1900
-        elif(targetLeftSpeed<1100):
-            targetLeftSpeed = 1100
+        if(targetLeftSpeed>1650):
+            targetLeftSpeed = 1650
+        elif(targetLeftSpeed<1350):
+            targetLeftSpeed = 1350
 
-        if(targetRightSpeed>1900):
-            targetRightSpeed = 1900
-        elif(targetRightSpeed<1100):
-            targetRightSpeed = 1100
+        if(targetRightSpeed>1650):
+            targetRightSpeed = 1650
+        elif(targetRightSpeed<1350):
+            targetRightSpeed = 1350
 
         frontSpeeds[pos]=targetFrontSpeed
         backSpeeds[pos]=targetBackSpeed
@@ -212,8 +212,10 @@ def main():
             targetLeftSpeed +=leftSpeeds[i]
             targetRightSpeed +=rightSpeeds[i]
 
-        frontPitchPub.publish(int(targetFrontSpeed/10))
-        backPitchPub.publish(int(targetBackSpeed/10))
+        #frontPitchPub.publish(int(targetFrontSpeed/10))
+        #backPitchPub.publish(int(targetBackSpeed/10))
+        frontPitchPub.publish(1500)
+        backPitchPub.publish(1500)
         sideLeftSpeedPub.publish(int(targetLeftSpeed/10))
         sideRightSpeedPub.publish(int(targetRightSpeed/10))
         rate.sleep()

@@ -172,6 +172,7 @@ int main(int argc, char **argv)
                bottomMax = bottomMax>yawTargets[0]?bottomMax:yawTargets[0];
             }
            bottomframecount++;
+           frontframecount = 0;
            setFinalYaw = yawTargets[0];
       }
       else if(yawTargets[1] != USELESS)
@@ -185,11 +186,12 @@ int main(int argc, char **argv)
                }
                else
                {
-                  frontAvg = (frontAvg*(bottomframecount)+yawTargets[0])/(frontframecount+1); // running avg
-                  frontMin = frontMin<yawTargets[0]?frontMin:yawTargets[0];
-                  frontMax = frontMax>yawTargets[0]?frontMax:yawTargets[0];
+                  frontAvg = (frontAvg*(frontframecount)+yawTargets[1])/(frontframecount+1); // running avg
+                  frontMin = frontMin<yawTargets[1]?frontMin:yawTargets[1];
+                  frontMax = frontMax>yawTargets[1]?frontMax:yawTargets[1];
                }
             frontframecount++;
+            bottomframecount=0;
            setFinalYaw = yawTargets[1];
       }
       else
@@ -197,14 +199,15 @@ int main(int argc, char **argv)
          if(frontframecount>10 && abs(rad2deg(atan2(sin(deg2rad(frontMin-frontMax)),cos(deg2rad(frontMin-frontMax)))))<10.0)
          {
             frontlatchtimer = clock();
-            double frontlatchvalue = frontAvg;
+            frontlatchvalue = frontAvg;
          }
          if(bottomframecount>10 && abs(rad2deg(atan2(sin(deg2rad(bottomMin - bottomMax)),cos(deg2rad(bottomMin - bottomMax)))))<10.0)
          {
-            //globalYaw = bottomAvg;
-            yawTargets[2] = bottomAvg;
+            globalYaw = bottomAvg;
+            cout << "global yaw set here " << endl;
+            yawTargets[2] = globalYaw;
          }
-         if((clock()-frontlatchtimer)/CLOCKS_PER_SEC<5.0) // Change the time if needed
+         else if((clock()-frontlatchtimer)/CLOCKS_PER_SEC<5.0) // Change the time if needed
             yawTargets[2] = frontlatchvalue;
          else
             yawTargets[2] = globalYaw;

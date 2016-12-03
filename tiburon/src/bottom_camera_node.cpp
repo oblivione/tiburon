@@ -127,7 +127,6 @@ int main(int argc, char **argv)
       ros::spinOnce();
       if(!bottomImageReceived || !frontImageReceived)
          continue;
-    double bottomAvg = USELESS,frontAvg = USELESS;
 
       medianBlur(frontIm,frontIm,7);
       dilate(frontIm,frontIm,getStructuringElement(MORPH_RECT,Size(7,7)));
@@ -157,6 +156,7 @@ int main(int argc, char **argv)
       yawTargets[1] = frontcamLineYaw;
       cout << "Yawtargets array " << yawTargets[0] << "\t" << yawTargets[1] << "\t" << yawTargets[2] << endl;
             //Todo - if bottomcamerayaw value persists - the globalyaw should be updated
+    cout<<"Counts "<<frontframecount<<"\t"<<bottomframecount<<endl;
       if(yawTargets[0] != USELESS)
       {
             if(bottomframecount == 0)
@@ -170,6 +170,7 @@ int main(int argc, char **argv)
                bottomAvg = (bottomAvg*(bottomframecount)+yawTargets[0])/(bottomframecount+1); // running avg
                bottomMin = bottomMin<yawTargets[0]?bottomMin:yawTargets[0];
                bottomMax = bottomMax>yawTargets[0]?bottomMax:yawTargets[0];
+               cout<<"Avg: "<<bottomAvg<< "\t" << bottomMax <<"\t"<<bottomMin<<endl;
             }
            bottomframecount++;
            frontframecount = 0;
@@ -201,7 +202,7 @@ int main(int argc, char **argv)
             frontlatchtimer = clock();
             frontlatchvalue = frontAvg;
          }
-         if(bottomframecount>10 && abs(rad2deg(atan2(sin(deg2rad(bottomMin - bottomMax)),cos(deg2rad(bottomMin - bottomMax)))))<10.0)
+         if(bottomframecount>10)// && abs(rad2deg(atan2(sin(deg2rad(bottomMin - bottomMax)),cos(deg2rad(bottomMin - bottomMax)))))<10.0)
          {
             globalYaw = bottomAvg;
             cout << "global yaw set here " << endl;

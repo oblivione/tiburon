@@ -105,7 +105,7 @@ def main():
     yawAndPitchSub = rospy.Subscriber('/tiburon/ins_data',ins_data,yawAndPitchCallback)
     fourcc1 = fourcc2 = fourcc3 = cv2.cv.CV_FOURCC(*'MJPG')
     out1 = cv2.VideoWriter('1_AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',fourcc1,30.0,(640,480))
-    out2 = cv2.VideoWriter('2_AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',fourcc2,30.0,(640,480))
+    out2 = cv2.VideoWriter('2_AUV_REC_'+datetime.datetime.now().strftime('%Y%m%d%H%M%S')+'.avi',fourcc2,30.0,(480,640))
     rospy.init_node('image_capture',anonymous=False)
     rate = rospy.Rate(30)
     bridge = CvBridge()

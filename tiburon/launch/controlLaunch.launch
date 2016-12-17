@@ -1,4 +1,5 @@
 <launch>
+    <node pkg="tiburon" type="init.py" name="StartupNode" respawn="true"/>
     <node pkg="tiburon" type="serialNode.py" name="serial_node" respawn="true"/>
     <node pkg="tiburon" type="thruster_controller" name="thruster_controller" args="/dev/ttyACM0" respawn="true"/>
     <node pkg="tiburon" type="vn100_node" name="tiburon" respawn="true"/>

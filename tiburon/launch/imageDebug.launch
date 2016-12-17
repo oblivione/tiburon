@@ -1,4 +1,5 @@
 <launch>
     <node pkg="tiburon" type="ipNodeData.py" name="bottomCameraDebug" args="auvBottomCamera bottomCameraSegmented bottomImage"/>
     <node pkg="tiburon" type="ipNodeData.py" name="frontCameraDebug" args="auvLeftCamera frontCameraSegmented frontImage"/>
+    <node pkg="tiburon" type="ipNodeData.py" name="enhancedDebug" args="frontEnhanced bottomEnhanced frontImage"/>
 </launch>

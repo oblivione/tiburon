@@ -8,8 +8,8 @@ using namespace std;
 using namespace cv;
 
 ros::Publisher hsv2,hsv1;
-int lowH=25, lowS=30, lowV=0, highH=155, highS=255, highV=255,d=70;
-int lowH1=14, lowS1=30, lowV1=0, highH1=155, highS1=255, highV1=255,d1=70;
+int lowH=25, lowS=30, lowV=30, highH=155, highS=255, highV=255,d=70;
+int lowH1=14, lowS1=30, lowV1=30, highH1=155, highS1=255, highV1=255,d1=70;
 
 
 void sendData( int, void* )

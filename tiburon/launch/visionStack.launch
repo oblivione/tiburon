@@ -2,4 +2,5 @@
     <node pkg="tiburon" type="capture.py" name="image_capture" respawn="true"/>
     <node pkg="tiburon" type="enhancedSegmentation" name="SegmentationNodeBottom" respawn="true"/>
     <node pkg="tiburon" type="segmentationFront" name="SegmentationNodeFront" respawn="true"/>
+    <node pkg="tiburon" type="bottom_camera_node" name="CameraControllerNode" respawn="true"/>
 </launch>

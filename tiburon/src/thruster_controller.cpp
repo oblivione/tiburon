@@ -18,7 +18,7 @@ servo control by Pololu.
 #endif
 
 int fd, sFront = 0, sBack = 0, sLeft = 0, sRight = 0;
-int reverseThruster1 = 0, reverseThruster2 = 0, reverseThruster3 = 0, reverseThruster4 = 0;
+int reverseThruster1 = 0, reverseThruster2 = 1, reverseThruster3 = 1, reverseThruster4 = 1;
 
 void reverseCallback(const std_msgs::UInt16::ConstPtr& msg)
 {

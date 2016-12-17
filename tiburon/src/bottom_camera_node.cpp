@@ -47,7 +47,7 @@ void stopCallback(const std_msgs::UInt16::ConstPtr& stopf);
 
 double getBottomYaw(Mat bottomCameraImage);
 double getLineDirection(vector<Point> contour);
-double getFrontYaw(Mat segImage);
+double getFrontYaw(Mat segImage,bool &bouydetected);
 
 
 
@@ -61,7 +61,7 @@ double rad2deg(double);
 #define MOVETOCENTER 10
 #define BOTTOMCROP 0.6
 #define FRONTCROP 1.0
-#define OUTERCIRCLE 0.36
+#define OUTERCIRCLE 0.5
 #define OUTER 100
 #define INNERCIRCLE 0.2 // Radius = cols*innercircle
 #define INNER 50
@@ -74,13 +74,14 @@ double rad2deg(double);
 #define FRONTCAMFOV 78
 
 
-double globalYaw = 133.0;
-double currentYaw = 100.0; // #Todo Remove this
+double globalYaw = -40;
+double currentYaw = 100.0, currentPitch = 0.0; // #Todo Remove this
 double yawUndeadband = 2.5;
 double speedfactor = 4.0;
 double frontareaLow = 0.0,frontareaHigh = 0.0;
 double bottomareaLow = 0.0,bottomareaHigh = 0.0;
-
+double angleheuristic = 0.0;
+double bouytaskcompleted = false;
 Mat orig,frontdisp,bottomdisp;
 Mat frontIm,bottomIm;
 vector<Point> largestContour;
@@ -108,6 +109,7 @@ int main(int argc, char **argv)
     image_transport::Publisher frontPub = it.advertise("/frontImage", 1);
     image_transport::Publisher bottomPub = it.advertise("/bottomImage", 1);
     ros::Subscriber ins = nh.subscribe("/tiburon/ins_data",1,insCallback);
+    ros::Publisher depthPub = nh.advertise<std_msgs::Float64>("/depthSP",1);
     ros::Publisher yawPub = nh.advertise<std_msgs::Float64>("/yawSP",1);
     ros::Publisher velPub = nh.advertise<std_msgs::Float64>("/velSP",1);
     ros::Subscriber stopflag = nh.subscribe("/stopflag",1,stopCallback);
@@ -116,18 +118,21 @@ int main(int argc, char **argv)
     double setFinalYaw = currentYaw;
     double setFinalSpeed = 0;
     double yawTargets[3] ={globalYaw,globalYaw,globalYaw};
-    //bottomIm = Mat::zeros(Size(640,480),CV_8UC1);
+    bottomIm = Mat::zeros(Size(640,480),CV_8UC1);
+    frontIm = Mat::zeros(Size(480,640),CV_8UC1);
     double bottomAvg = USELESS,frontAvg = USELESS;
     double bottomMax = USELESS,frontMax = USELESS;
     double bottomMin = USELESS,frontMin = USELESS;
     double bottomframecount = 0,frontframecount = 0;
-    double frontlatchtimer,frontlatchvalue;
+    double frontlatchtimer = USELESS,frontlatchvalue=USELESS;
+    vector<double> frontVals;
+    for(int i = 0;i<10;i++)
+     frontVals.push_back(globalYaw);
     while(1)
     {
       ros::spinOnce();
       if(!bottomImageReceived || !frontImageReceived)
          continue;
-
       medianBlur(frontIm,frontIm,7);
       dilate(frontIm,frontIm,getStructuringElement(MORPH_RECT,Size(7,7)));
       Point frontcenter = Point(frontIm.cols/2,frontIm.rows/2);
@@ -147,15 +152,87 @@ int main(int argc, char **argv)
 
       Mat frontsegLine = frontIm;
       Mat bottomseg = bottomIm;
-
-      double frontcamLineYaw = getFrontYaw(frontsegLine);
+      bool isbouy = false;
+      double frontcamLineYaw = getFrontYaw(frontsegLine,isbouy);
+      if(isbouy && !bouytaskcompleted)
+      {
+         double clockstart = clock();
+         while((clock()-clockstart)/CLOCKS_PER_SEC<2.5) // Touch Bouy
+         {
+               setFinalYaw = currentYaw;
+               setFinalSpeed = 2.6;
+               f64msg.data= setFinalSpeed;
+               velPub.publish(f64msg);
+               f64msg.data = setFinalYaw;
+               yawPub.publish(f64msg);
+               f64msg.data = 983; // CHANGE
+               depthPub.publish(f64msg)
+               ros::spinOnce();
+               //Final_TODO depth set
+         }
+         clockstart = clock();
+         while((clock()-clockstart)/CLOCKS_PER_SEC<1) // Get back
+         {
+               setFinalYaw = currentYaw;
+               setFinalSpeed = -2.0;
+               f64msg.data= setFinalSpeed;
+               velPub.publish(f64msg);
+               f64msg.data = setFinalYaw;
+               yawPub.publish(f64msg);
+               f64msg.data = 983; // CHANGE
+               depthPub.publish(f64msg)
+               ros::spinOnce();
+               //Final_TODO depth set
+         }
+         clockstart = clock();
+         while((clock()-clockstart)/CLOCKS_PER_SEC<3.0) // Ascend
+         {
+               setFinalYaw = currentYaw;
+               setFinalSpeed = 0.0;
+               f64msg.data= setFinalSpeed;
+               velPub.publish(f64msg);
+               f64msg.data = setFinalYaw;
+               yawPub.publish(f64msg);
+               f64msg.data = 983; // CHANGE
+               depthPub.publish(f64msg)
+               ros::spinOnce();
+               //Final_TODO depth set
+         }
+         clockstart = clock();
+         while((clock()-clockstart)/CLOCKS_PER_SEC<5.0) // Cross bouy
+         {
+               setFinalYaw = currentYaw;
+               setFinalSpeed = 5.0;
+               f64msg.data= setFinalSpeed;
+               velPub.publish(f64msg);
+               f64msg.data = setFinalYaw;
+               yawPub.publish(f64msg);
+               f64msg.data = 983; // CHANGE
+               depthPub.publish(f64msg)
+               ros::spinOnce();
+               //Final_TODO depth set
+         }
+         clockstart = clock();
+         while((clock()-clockstart)/CLOCKS_PER_SEC<3.0) // Descend
+         {
+               setFinalYaw = currentYaw;
+               setFinalSpeed = 0.0;
+               f64msg.data= setFinalSpeed;
+               velPub.publish(f64msg);
+               f64msg.data = setFinalYaw;
+               yawPub.publish(f64msg);
+               f64msg.data = 983; // CHANGE
+               depthPub.publish(f64msg)
+               ros::spinOnce();
+               //Final_TODO depth set
+         }
+         bouytaskcompleted = true;
+      }
       // double frontcamObjectYaw = getFrontYaw(frontsegObject);
       double bottomcamYaw = getBottomYaw(bottomseg);
       yawTargets[0] = bottomcamYaw;
-      //Todo - select between object and line
       yawTargets[1] = frontcamLineYaw;
       cout << "Yawtargets array " << yawTargets[0] << "\t" << yawTargets[1] << "\t" << yawTargets[2] << endl;
-            //Todo - if bottomcamerayaw value persists - the globalyaw should be updated
     cout<<"Counts "<<frontframecount<<"\t"<<bottomframecount<<endl;
       if(yawTargets[0] != USELESS)
       {
@@ -174,12 +251,13 @@ int main(int argc, char **argv)
             }
            bottomframecount++;
            frontframecount = 0;
-           setFinalYaw = yawTargets[0];
+           setFinalYaw = yawTargets[0];// + angleheuristic;
+	       //setFinalYaw = atan2(sin(deg2rad(setFinalYaw)),cos(deg2rad(setFinalYaw)));
       }
       else if(yawTargets[1] != USELESS)
       {
 
-               if(frontframecount == 0)
+            /*   if(frontframecount == 0)
                {
                   frontAvg = yawTargets[1];
                   frontMax = yawTargets[1];
@@ -190,15 +268,27 @@ int main(int argc, char **argv)
                   frontAvg = (frontAvg*(frontframecount)+yawTargets[1])/(frontframecount+1); // running avg
                   frontMin = frontMin<yawTargets[1]?frontMin:yawTargets[1];
                   frontMax = frontMax>yawTargets[1]?frontMax:yawTargets[1];
-               }
+               }*/
+            frontVals[(int)frontframecount%10] = yawTargets[1];
             frontframecount++;
             bottomframecount=0;
            setFinalYaw = yawTargets[1];
       }
       else
       {
-         if(frontframecount>10 && abs(rad2deg(atan2(sin(deg2rad(frontMin-frontMax)),cos(deg2rad(frontMin-frontMax)))))<10.0)
+         if(frontframecount>10 )//&& abs(rad2deg(atan2(sin(deg2rad(frontMin-frontMax)),cos(deg2rad(frontMin-frontMax)))))<10.0)
          {
+            frontAvg = 0;
+            int signcount = 0;
+            for(int x=0;x<10;x++)
+            {
+                if(frontVals[0]>0)
+                    signcount++;
+               frontAvg += frontVals[x];
+            }
+            frontAvg = frontAvg/10;
+            if(signcount<5)
+                frontAvg = -frontAvg;
             frontlatchtimer = clock();
             frontlatchvalue = frontAvg;
          }
@@ -208,7 +298,7 @@ int main(int argc, char **argv)
             cout << "global yaw set here " << endl;
             yawTargets[2] = globalYaw;
          }
-         else if((clock()-frontlatchtimer)/CLOCKS_PER_SEC<5.0) // Change the time if needed
+         else if((clock()-frontlatchtimer)/CLOCKS_PER_SEC<5.0 && frontlatchtimer != USELESS) // Change the time if needed
             yawTargets[2] = frontlatchvalue;
          else
             yawTargets[2] = globalYaw;
@@ -217,7 +307,7 @@ int main(int argc, char **argv)
          bottomframecount=0;
       }
       //Todo - set velocity heuristic
-      setFinalSpeed = 3.0;
+      setFinalSpeed = 5.0;
 
          f64msg.data= setFinalSpeed;
          velPub.publish(f64msg);
@@ -266,8 +356,10 @@ double getBottomYaw(Mat bottomCameraImage)
     else
     {
         double linedirection = getLineDirection(largestContour); // this line direction is according to the image
+        double diffx = centerOfLine.x - bottomCameraImage.cols/2;
+        angleheuristic = diffx/(bottomCameraImage.cols/2.0)*22.0;
         double setFinalYaw = 90.0+currentYaw-linedirection;
-        setFinalYaw = rad2deg(atan2(sin(deg2rad(setFinalYaw)),cos(deg2rad(setFinalYaw))));
+	setFinalYaw = rad2deg(atan2(sin(deg2rad(setFinalYaw)),cos(deg2rad(setFinalYaw))));
         return setFinalYaw;
     }
 }
@@ -297,9 +389,17 @@ double getLineDirection(vector<Point> contour)
         else
             diffangle = cc_angle(approxContour[i],approxContour[i+1]);
         angles.push_back(rad2deg(diffangle));
+        if(abs(angles[i]) == 0.0 || abs(angles[i]) == 180.0)
+       {
+          angles[i] = 10000; // so that top line cannot be parallel
+       }
         cout << "a " << angles[i] << endl;
     }
     double angleset1 = abs(angles[0]-angles[2]),angleset2 = abs(angles[1]-angles[3]);
+    if(angles[0] == 10000)
+     angleset1 = 90.0;
+  if(angles[1] == 10000)
+     angleset2 = 90.0;
     if(abs(angleset1-180.0)<15 && abs(angleset2-180.0)<15)
     {
         // use the closer angle to the globalyaw
@@ -321,13 +421,15 @@ double getLineDirection(vector<Point> contour)
     // approxpolydp will always give points in circular pattern so angles will be separated by 2 if sides = 4
     return targetyaw;
 }
-double getFrontYaw(Mat segImage)
+double getFrontYaw(Mat segImage,bool &bouydetected)
 {
+    if(currentPitch>=10.0)
+        return USELESS;
     vector<vector<Point> > contours;
     // Todo - fix the correct crop size
     Mat frontCrop = segImage(Rect(0,segImage.rows*0.5,segImage.cols,segImage.rows*0.5)); // Crop the top part , TOPCROP % from top corner
-    findContours(frontCrop.clone(),contours,CV_RETR_TREE,CV_CHAIN_APPROX_NONE);
     int largest = findLargestContour(contours);
+    findContours(frontCrop.clone(),contours,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE); // IMPORTANT CHANGE MADE FROM CV_CHAIN_APPROX_NONE to CV_CHAIN_APPROX_SIMPLE
     if(largest == -1)
     {
         cout << "Front nothing detected" << endl;
@@ -339,6 +441,13 @@ double getFrontYaw(Mat segImage)
           cout << "Front out of area limits" << endl;
           return USELESS;
     }
+    if(currarea > (frontareaLow+frontareaHigh)/2) // size has to be changed or front movement has to be increased
+    {
+      vector<Point> appCont;
+      approxPolyDP(contours[largest],appCont,3,true); // Final_TODO approximation value has to be changed
+      if(appCont.size()>15)
+         bouydetected = true;
+   }
     drawContours(frontdisp,contours,largest,Scalar(255,255,255),-1);
     double tanthetamax = tan(deg2rad(FRONTCAMFOV/2));
     Point center = findCenter(contours[largest]);
@@ -349,7 +458,6 @@ double getFrontYaw(Mat segImage)
 
     double theta = rad2deg(atan(tantheta));
     cout<< "thm " << tanthetamax << " th " << theta << " tantheta " << tantheta << endl;
-    //Todo check the direction of the theta with yaw
     double frontYaw = currentYaw+theta;
     return frontYaw;
 }
@@ -435,6 +543,7 @@ double cc_angle(Point2i vtx,Point2i p2)
 void insCallback(const tiburon::ins_data::ConstPtr& ypr)
 {
     currentYaw = ypr->YPR.x;
+    currentPitch = ypr->YPR.y;
 }
 void stopCallback(const std_msgs::UInt16::ConstPtr& stopf)
 {

@@ -1,0 +1,3 @@
+SUBSYSTEM=="video4linux",ATTRS{serial}=="EB694D0F",SYMLINK+="leftCamera"
+SUBSYSTEM=="video4linux",ATTRS{serial}=="D57F3D0F",SYMLINK+="rightCamera"
+SUBSYSTEM=="video4linux",ATTRS{serial}=="06E3745F",SYMLINK+="bottomCamera"

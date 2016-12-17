@@ -17,7 +17,7 @@ using namespace std;
 
 bool imageReceived = false;
 Mat inp, out;
-int hl=25,sl=30,vl=0,hh=155,sh=255,vh=255;
+int hl=25,sl=30,vl=30,hh=155,sh=255,vh=255;
 float d=0.7;
 typedef struct t_color_node {
     cv::Mat       mean;       // The mean of this node
@@ -349,6 +349,7 @@ int main(int argc, char* argv[])
     image_transport::ImageTransport it(nh);
     image_transport::Subscriber imageSub = it.subscribe("auvBottomCamera",1,imageCallback);
     image_transport::Publisher segPub = it.advertise("bottomCameraSegmented", 1);
+    image_transport::Publisher enhancedPub = it.advertise("bottomEnhanced",1);
     ros::Subscriber hsvData = nh.subscribe("/hsv_data_1",1,hsvCallback);
     sensor_msgs::ImagePtr msg;
     while(!imageReceived) ros::spinOnce();
@@ -368,11 +369,11 @@ int main(int argc, char* argv[])
 
 
         cvtColor(image, image_hsv, COLOR_BGR2HSV);
-        inRange(image_hsv,Scalar(hl,sl,vl),Scalar(hh,sh,vh),segmented);
+        //inRange(image_hsv,Scalar(hl,sl,vl),Scalar(hh,sh,vh),segmented);
         //cvtColor(imgH, image_hsv_sat, COLOR_BGR2HSV);
-        //inRange(image_hsv,Scalar(0,sl,vl),Scalar(hl,sh,vh),segmented_1);
-        //inRange(image_hsv,Scalar(hh,sl,vl),Scalar(180,sh,vh),segmented_2);
-        //bitwise_or(segmented_2,segmented_1,segmented);
+        inRange(image_hsv,Scalar(0,sl,vl),Scalar(hl,sh,vh),segmented_1);
+        inRange(image_hsv,Scalar(hh,sl,vl),Scalar(180,sh,vh),segmented_2);
+        bitwise_or(segmented_2,segmented_1,segmented);
         //imshow("Image",image);
         //imshow("Seg",segmented);
         // vector<Mat>hsv;
@@ -418,6 +419,8 @@ int main(int argc, char* argv[])
         // TODO
         msg = cv_bridge::CvImage(std_msgs::Header(), "mono8", segmented).toImageMsg();
         segPub.publish(msg);
+        msg = cv_bridge::CvImage(std_msgs::Header(),"bgr8",image).toImageMsg();
+        enhancedPub.publish(msg);
         imageReceived = 0;
         if(char(waitKey(30)) == 27)
        {
